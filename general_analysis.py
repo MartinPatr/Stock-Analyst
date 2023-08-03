@@ -27,7 +27,11 @@ def calculate_score(data):
 
     for factor, weight in weightages.items():
         if factor in ideal_ranges and data[factor] != False:
-            value = float(data[factor].replace(",", ""))
+            value = data[factor]
+            if not isinstance(value, int):
+                value = float(value.replace(",", "").replace("%", ""))
+
+
             min_val, max_val = ideal_ranges[factor]
 
             # Normalize the value to a range between 0 and 1
@@ -40,25 +44,3 @@ def calculate_score(data):
     # Store the overall score in the data dictionary
     score = round(score, 2) * 100
     data['Score'] = score
-
-# Example usage:
-data = {
-    'Ticker': 'AAPL',
-    'Price': '150.0',
-    'Industry': 'Software',
-    'Sector': 'Technology',
-    'Description': 'A tech company',
-    'Market Cap': '1000000000',
-    'P/E': '10',
-    'P/S': '1',
-    'P/B': '1',
-    'Current Ratio': '4',
-    'Cash Ratio': '15',
-    'Gross Margin': '35.0',
-    'Debt to Equity': '0.4',
-    '% of Insider Purchasing': '100.0',  # Changed % of Insider Purchasing to 75.0 (higher value)
-    'Score': None,
-}
-
-calculate_score(data)
-print(data)

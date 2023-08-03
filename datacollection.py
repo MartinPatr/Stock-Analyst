@@ -135,10 +135,6 @@ def calculate_score(data):
 
 
 
-calculate_data(100)
-
-
-
 
 # Selenium test
 def selenium_test():

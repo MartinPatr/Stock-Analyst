@@ -2,7 +2,8 @@ import time
 from datacollection import get_frontpage_url, get_data
 from general_analysis import calculate_score
 
-def calculate_data(numStocks):
+# Calculate the final score for each stock
+def stock_analysis(numStocks):
     stocks = []
     with open('validtickers.txt', 'r') as file:
         for i, line in enumerate(file):
@@ -14,7 +15,6 @@ def calculate_data(numStocks):
                 data = get_data(html, ticker)
             except:
                 print("Unable to retrieve main page statistics")
-                continue
             if data is not False:
                 # Replace empty values with False
                 for key in data:
@@ -42,4 +42,5 @@ def calculate_data(numStocks):
             print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}")
             print(f"Description: {stock['Description']}") 
             i += 1
-            
+
+stock_analysis(100)
