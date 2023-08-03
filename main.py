@@ -1,6 +1,6 @@
 import time
 from datacollection import get_frontpage_url, get_data
-from analysis1 import calculate_score
+from general_analysis import calculate_score
 
 def calculate_data(numStocks):
     stocks = []

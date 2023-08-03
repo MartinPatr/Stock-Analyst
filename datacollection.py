@@ -94,6 +94,7 @@ def get_data(html,stock_symbol):
         pass
     
     return data
+
             
 def calculate_score(data):
     score = 0
