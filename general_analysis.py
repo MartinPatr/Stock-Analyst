@@ -1,3 +1,4 @@
+# Description: This file contains the functions used to perform the general analysis of the stocks
 def calculate_score(data):
     # Weightages for each factor
     weightages = {

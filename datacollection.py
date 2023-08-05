@@ -58,7 +58,6 @@ def get_data(html,stock_symbol):
         data['Industry'] = pe_sector_element[6].text
         data['Sector'] = pe_sector_element[7].text
         data['Description'] = pe_description_element.text
-        data['Market Cap'] = pe_ratio_element[8].text
         data['P/E'] = pe_ratio_element[0].text
         data['P/S'] = pe_ratio_element[3].text
         data['P/B'] = pe_ratio_element[4].text
