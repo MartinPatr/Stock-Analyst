@@ -5,7 +5,7 @@ from general_analysis import calculate_score
 # Calculate the final score for each stock
 def stock_analysis(numStocks):
     stocks = []
-    with open('validtickers.txt', 'r') as file:
+    with open('data/validtickers.txt', 'r') as file:
         for i, line in enumerate(file):
             print("Number: " + str(i))
             tickerList = line.strip().split()
