@@ -50,9 +50,13 @@ def stock_analysis(numStocks):
         # Close the driver
         close_driver()
 
+        # Sort the stocks based on the score in descending order
+        sorted_stocks = sorted(sorted_stocks, key=lambda x: x['Score'], reverse=True)
         return sorted_stocks
 
-             
+
+
+
          
 
 # Function to print out the data
@@ -64,7 +68,7 @@ def print_data(stocks, numStocks):
         print()
         print("--------------------------------------------------")
         print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
-        print(f"Price: {stock['Price']}, Recommendation: {stock['Recommendation']}")
+        print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}")
         print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}")
         print(f"Description: {stock['Description']}") 
         i += 1

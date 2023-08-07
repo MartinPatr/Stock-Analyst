@@ -47,14 +47,38 @@ def get_analyst_estimates(data):
     try:
         data['Recommendation'] = pe_ratio_element[0].text
         data['Target Price'] = pe_ratio_element[1].text
-        
+        update_score_analysis(data)
     except:
         data['Recommendation'] = False
         data['Target Price'] = False
         data['Score'] = 0
 
- 
+# Updates the score of the ticker based on the information that we found on the analysis page
+def update_score_analysis(data):
+    # Update the score based on the expert recommendation
+    if data['Recommendation'] == 'Buy':
+        data['Score'] = round(data["Score"] * 1.33,2)
+    elif data['Recommendation'] == 'Overweight':
+        data['Score'] = round(data["Score"] * 1.15,2)
+    elif data['Recommendation'] == 'Hold':
+        pass
+    elif data['Recommendation'] == 'Underweight':
+        data['Score'] = round(data["Score"] * 0.85,2)
+    elif data['Recommendation'] == 'Sell':
+        data['Score'] = round(data["Score"] * 0.67,2)
+    else:
+        data["Score"] = 0
+    
+    # Update the score based on the target price
+    current_price = float(data['Price'])
+    target_price = float(data['Target Price'])
 
+    price_difference = target_price - current_price
+    price_total = target_price + current_price
+    price_difference_percentage = (price_difference/(price_total/2))/2
+    data["Score"] = round(data["Score"] * (1 + price_difference_percentage),2)
+
+# Close the driver
 def close_driver():
     driver.close()
 
