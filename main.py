@@ -1,7 +1,7 @@
 import time
 from datacollection import get_frontpage_url, get_data
 from general_analysis import calculate_score
-from detailed_analysis import update_score
+from detailed_analysis import update_score, close_driver
 
 # Calculate the final score for each stock
 def stock_analysis(numStocks):
@@ -28,14 +28,14 @@ def stock_analysis(numStocks):
             if i == numStocks:  
                 break
             # Sleep for 1 minute every 100 requests to avoid getting blocked
-            elif i % 100 == 0:
+            elif i % 100 == 0 and i != 0:
                 time.sleep(60)
        
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
 
         # Only keep the top 100 stocks
-        numStocks = 100
+        numStocks = 25
         i = 0
         for stock in sorted_stocks.copy():
             if i >= numStocks:
@@ -43,32 +43,33 @@ def stock_analysis(numStocks):
             i += 1
 
         # Run detailed analysis on the top 100 stocks
-        for stock in sorted_stocks:
-            print("Update Score")
+        for i, stock in enumerate(sorted_stocks):
+            print()
+            print("Detailed analysis: " + str(i))
+            update_score(stock)
+        # Close the driver
+        close_driver()
+
+        return sorted_stocks
+
+             
          
-        
 
-
-
-        
-
-
-    
-
-def print_data(stocks):
+# Function to print out the data
+def print_data(stocks, numStocks):
     # Print out the companies with the highest scores
-    i = 0
-    for stock in stocks:            
-        if i == 10:
+    for i, stock in enumerate(stocks):            
+        if i == numStocks:
             break
-    print()
-    print("--------------------------------------------------")
-    print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
-    print(f"Price: {stock['Price']}, Market Cap: {stock['Market Cap']}")
-    print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}")
-    print(f"Description: {stock['Description']}") 
-    i += 1
+        print()
+        print("--------------------------------------------------")
+        print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
+        print(f"Price: {stock['Price']}, Recommendation: {stock['Recommendation']}")
+        print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}")
+        print(f"Description: {stock['Description']}") 
+        i += 1
 
 
-
-stock_analysis(100)
+stocks = stock_analysis(99)
+print(len(stocks))
+print_data(stocks,10)
