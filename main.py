@@ -27,8 +27,8 @@ def stock_analysis(numStocks):
             # Only analyze the amount of stocks specified
             if i == numStocks:  
                 break
-            # Sleep for 1 minute every 100 requests to avoid getting blocked
-            elif i % 100 == 0 and i != 0:
+            # Sleep for 1 minute every 250 requests to avoid getting blocked
+            elif i % 250 == 0 and i != 0:
                 time.sleep(60)
        
         # Sort the stocks based on the score in descending order
@@ -55,10 +55,6 @@ def stock_analysis(numStocks):
         return sorted_stocks
 
 
-
-
-         
-
 # Function to print out the data
 def print_data(stocks, numStocks):
     # Print out the companies with the highest scores
@@ -68,10 +64,9 @@ def print_data(stocks, numStocks):
         print()
         print("--------------------------------------------------")
         print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
-        print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}")
+        print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}, Insider Trading Score: {stock['% of Insider Purchasing']}")
         print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}")
         print(f"Description: {stock['Description']}") 
-        i += 1
 
 
 stocks = stock_analysis(99)

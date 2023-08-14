@@ -2,10 +2,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 import time
-import requests
-
 
 
 # Set up the driver
@@ -24,21 +21,19 @@ def update_score(data):
     print(url)
     print("Ticker: " + stock_symbol)
     driver.get(url)
+    get_financials(data)
     get_analyst_estimates(data)
-    
+
 # Selenium test
 def get_analyst_estimates(data):
- 
     # Wait for the page to load
+    button = driver.find_element(By.XPATH,"//a[text()='Analyst Estimates']")
+    print(button)
+    button.click()
+   
     time.sleep(1)
-    try:
-        # Close pop up window
-        closeBtn = driver.find_element(By.CLASS_NAME, 'close-btn')
-        closeBtn.click()
-        time.sleep(1)
-    except:
-        pass
-
+    close_popup()
+    
     # Get the html from the page
     html = driver.page_source
     #Use BeautifulSoup to parse the html
@@ -78,7 +73,53 @@ def update_score_analysis(data):
     price_difference_percentage = (price_difference/(price_total/2))/2
     data["Score"] = round(data["Score"] * (1 + price_difference_percentage),2)
 
+# Updates the score of the ticker based on the information from the financials page
+def get_financials(data):    
+    
+    
+    close_popup()
+
+    # Get the html from the page
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    financial_elements = soup.find_all('tr', {'class': 'table__row'})
+    data["Net Income %"] = financial_elements[39].find_all('td')[5].text
+    data["EPS"] = financial_elements[51].find_all('td')[5].text
+    data["EPS %"] = financial_elements[52].find_all('td')[5].text
+
+
+# Close the popup window
+def close_popup():
+    try:
+        # Close pop up window
+        closeBtn = driver.find_element(By.CLASS_NAME, 'close-btn')
+        closeBtn.click()
+        time.sleep(1)
+    except:
+        return
+
 # Close the driver
 def close_driver():
     driver.close()
 
+
+data = {
+    'Ticker': 'AAPl',
+    'Price': '',
+    'Industry': '',
+    'Sector': '',
+    'Description': '',
+    'Market Cap': '',
+    'P/E': '',
+    'P/S': '',
+    'P/B': '',
+    'EV/Sales': '',
+    'Current Ratio': '',
+    "Cash Ratio": "",
+    'Gross Margin': '',
+    'Debt to Equity': '',
+    '% of Insider Purchasing': '',
+    'Score': 67,
+    }
+update_score(data)
+print(data["Score"])
