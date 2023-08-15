@@ -17,7 +17,7 @@ driver = webdriver.Chrome(options=options)
 def update_score(data):
     # Get the ticker symbol
     stock_symbol = data["Ticker"]
-    url = f"https://www.marketwatch.com/investing/stock/{stock_symbol}/analystestimates?mod=mw_quote_tab"
+    url = f"https://www.marketwatch.com/investing/stock/{stock_symbol}/financials?mod=mw_quote_tab"
     print(url)
     print("Ticker: " + stock_symbol)
     driver.get(url)
@@ -26,11 +26,12 @@ def update_score(data):
 
 # Selenium test
 def get_analyst_estimates(data):
-    # Wait for the page to load
-    button = driver.find_element(By.XPATH,"//a[text()='Analyst Estimates']")
-    print(button)
+
+    # Wait for the element to be clickable by CSS selector
+    elements = driver.find_elements(By.CLASS_NAME, "link")
+    print(elements)
     button.click()
-   
+
     time.sleep(1)
     close_popup()
     
@@ -82,7 +83,7 @@ def get_financials(data):
     # Get the html from the page
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
-    financial_elements = soup.find_all('tr', {'class': 'table__row'})
+    financial_elements = soup.find_all('tr', {'class': 'table__row'})    
     data["Net Income %"] = financial_elements[39].find_all('td')[5].text
     data["EPS"] = financial_elements[51].find_all('td')[5].text
     data["EPS %"] = financial_elements[52].find_all('td')[5].text
@@ -120,6 +121,6 @@ data = {
     'Debt to Equity': '',
     '% of Insider Purchasing': '',
     'Score': 67,
-    }
+}
 update_score(data)
 print(data["Score"])
