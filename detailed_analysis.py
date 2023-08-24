@@ -2,15 +2,18 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 
 
 # Set up the driver
 options = Options()
+options.add_argument('--disable-browser-side-navigation')
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(options=options)
-
+ChromeOptions = webdriver.ChromeOptions()
 
 
 # Updates the score of the ticker
@@ -24,14 +27,31 @@ def update_score(data):
     get_financials(data)
     get_analyst_estimates(data)
 
+
+
+# Updates the score of the ticker based on the information from the financials page
+def get_financials(data):    
+    
+    print("Getting financials")
+    
+    time.sleep(2)
+    close_popup()
+
+    # Get the html from the page
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    financial_elements = soup.find_all('tr', {'class': 'table__row'})
+    data["Net Income %"] = financial_elements[50].find_all('td')[5].text.replace('%','')
+    data["EPS"] = financial_elements[62].find_all('td')[5].text
+    data["EPS %"] = financial_elements[63].find_all('td')[5].text.replace('%','')
+
 # Selenium test
 def get_analyst_estimates(data):
-
-    # Wait for the element to be clickable by CSS selector
-    elements = driver.find_elements(By.CLASS_NAME, "link")
-    print(elements)
+    # Wait for the page to load
+    button = driver.find_element(By.XPATH,"//a[text()='Analyst Estimates']")
+    print(button)
     button.click()
-
+   
     time.sleep(1)
     close_popup()
     
@@ -74,30 +94,18 @@ def update_score_analysis(data):
     price_difference_percentage = (price_difference/(price_total/2))/2
     data["Score"] = round(data["Score"] * (1 + price_difference_percentage),2)
 
-# Updates the score of the ticker based on the information from the financials page
-def get_financials(data):    
-    
-    
-    close_popup()
 
-    # Get the html from the page
-    html = driver.page_source
-    soup = BeautifulSoup(html, 'html.parser')
-    financial_elements = soup.find_all('tr', {'class': 'table__row'})    
-    data["Net Income %"] = financial_elements[39].find_all('td')[5].text
-    data["EPS"] = financial_elements[51].find_all('td')[5].text
-    data["EPS %"] = financial_elements[52].find_all('td')[5].text
 
 
 # Close the popup window
 def close_popup():
     try:
-        # Close pop up window
         closeBtn = driver.find_element(By.CLASS_NAME, 'close-btn')
+        print(closeBtn)
         closeBtn.click()
         time.sleep(1)
     except:
-        return
+        pass
 
 # Close the driver
 def close_driver():
@@ -121,6 +129,6 @@ data = {
     'Debt to Equity': '',
     '% of Insider Purchasing': '',
     'Score': 67,
-}
+    }
 update_score(data)
 print(data["Score"])
