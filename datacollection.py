@@ -49,8 +49,12 @@ def get_data(html,stock_symbol):
     pe_value_element = soup.find_all('bg-quote', {'class': 'value'})
     pe_sector_element = soup.find_all('span', {'class': 'primary'})
     pe_na_element = soup.find_all('td',{'class':'is-na'})
+    state = soup.find('div', {'class': 'status'})
     if len(pe_na_element) > 13:
         print("Not enough information")
+        return False
+    elif state.text == "Closed":
+        print("Stock is closed")
         return False
     elif len(pe_ratio_element) == 29:
         data['Ticker'] = stock_symbol

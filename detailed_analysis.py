@@ -2,9 +2,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import time
 
 
 # Set up the driver
@@ -12,6 +11,9 @@ options = Options()
 options.add_argument('--disable-browser-side-navigation')
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
+options.add_argument('--disable-dev-shm-usage')
+options.add_argument('window-size=1920x1080')
+options.add_argument("--disable-extensions")
 driver = webdriver.Chrome(options=options)
 ChromeOptions = webdriver.ChromeOptions()
 
@@ -29,44 +31,73 @@ def update_score(data):
 
 
 
-# Updates the score of the ticker based on the information from the financials page
+# Gets the financials from the financials page
 def get_financials(data):    
     
-    print("Getting financials")
-    
-    time.sleep(2)
+    # Wait for the page to load and close the popup
     close_popup()
 
     # Get the html from the page
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     financial_elements = soup.find_all('tr', {'class': 'table__row'})
-    data["Net Income %"] = financial_elements[50].find_all('td')[5].text.replace('%','')
-    data["EPS"] = financial_elements[62].find_all('td')[5].text
-    data["EPS %"] = financial_elements[63].find_all('td')[5].text.replace('%','')
+    print("Financial elements: " + str(len(financial_elements)))
 
-# Selenium test
+    # Attempt to
+    try:
+        data["Profit Margin"] = financial_elements[21].find_all('td')[5].text.replace('%','')
+        data["Net Income %"] = financial_elements[50].find_all('td')[5].text.replace('%','')
+        data["EPS %"] = financial_elements[63].find_all('td')[5].text.replace('%','')
+        if data["Profit Margin"] == "-" or data["Profit Margin"] == "-" or data["Profit Margin"] == "-":
+            data['Score'] = 0
+            return
+        update_score_financials(data)
+    except Exception as e:
+        print("Failed to update score based on financials: ", e)
+        data['Score'] = 0
+
+# Updates the score of the ticker based on the information that we found on the financials page
+def update_score_financials(data):
+    # Update the score based on the profit margin
+    profit_margin = float(data["Profit Margin"])
+    data['Score'] = round(data["Score"] * (1 + (profit_margin/150)),2)
+
+    # Update the score based on the net income %
+    net_income = float(data["Net Income %"])
+    data['Score'] = round(data["Score"] * (1 + (net_income/200)),2)
+
+    # Update the score based on the EPS
+    eps = float(data["EPS %"])
+    data['Score'] = round(data["Score"] * (1 + (eps/200)),2)
+
+
+
+# Gets the analyst estimates from the analyst estimates page
 def get_analyst_estimates(data):
-    # Wait for the page to load
-    button = driver.find_element(By.XPATH,"//a[text()='Analyst Estimates']")
-    print(button)
-    button.click()
+    # Go to the analyst estimates page
+    try:
+        button = driver.find_element(By.XPATH,"//a[text()='Analyst Estimates']")
+        button.click()
+    except:
+        print("Stock is closed")
+        data['Score'] = 0
+        return
    
-    time.sleep(1)
+    # Wait for the page to load and close the popup
     close_popup()
     
     # Get the html from the page
     html = driver.page_source
     #Use BeautifulSoup to parse the html
     soup = BeautifulSoup(html, 'html.parser')
-    pe_ratio_element = soup.find_all('td', {'class': 'w25'})
+    ae_elements = soup.find_all('td', {'class': 'w25'})
+    print(len(ae_elements))
     try:
-        data['Recommendation'] = pe_ratio_element[0].text
-        data['Target Price'] = pe_ratio_element[1].text
+        data['Recommendation'] = ae_elements[0].text
+        data['Target Price'] = ae_elements[1].text
         update_score_analysis(data)
-    except:
-        data['Recommendation'] = False
-        data['Target Price'] = False
+    except Exception as e:
+        print("Failed to update score based on analyst estimates: ", e)
         data['Score'] = 0
 
 # Updates the score of the ticker based on the information that we found on the analysis page
@@ -83,6 +114,7 @@ def update_score_analysis(data):
     elif data['Recommendation'] == 'Sell':
         data['Score'] = round(data["Score"] * 0.67,2)
     else:
+        print("No recommendation found")
         data["Score"] = 0
     
     # Update the score based on the target price
@@ -92,43 +124,42 @@ def update_score_analysis(data):
     price_difference = target_price - current_price
     price_total = target_price + current_price
     price_difference_percentage = (price_difference/(price_total/2))/2
-    data["Score"] = round(data["Score"] * (1 + price_difference_percentage),2)
-
-
+    data["Score"] = round(data["Score"] * (1 + (price_difference_percentage)) ,2)
 
 
 # Close the popup window
 def close_popup():
+    # Wait to see if the popup appears
     try:
-        closeBtn = driver.find_element(By.CLASS_NAME, 'close-btn')
-        print(closeBtn)
-        closeBtn.click()
-        time.sleep(1)
+        button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CLASS_NAME, 'close-btn')))
+        button.click()
     except:
         pass
+
+
 
 # Close the driver
 def close_driver():
     driver.close()
 
 
-data = {
-    'Ticker': 'AAPl',
-    'Price': '',
-    'Industry': '',
-    'Sector': '',
-    'Description': '',
-    'Market Cap': '',
-    'P/E': '',
-    'P/S': '',
-    'P/B': '',
-    'EV/Sales': '',
-    'Current Ratio': '',
-    "Cash Ratio": "",
-    'Gross Margin': '',
-    'Debt to Equity': '',
-    '% of Insider Purchasing': '',
-    'Score': 67,
-    }
-update_score(data)
-print(data["Score"])
+# data = {
+#     'Ticker': 'AAPl',
+#     'Price': '176.40',
+#     'Industry': '',
+#     'Sector': '',
+#     'Description': '',
+#     'Market Cap': '',
+#     'P/E': '',
+#     'P/S': '',
+#     'P/B': '',
+#     'EV/Sales': '',
+#     'Current Ratio': '',
+#     "Cash Ratio": "",
+#     'Gross Margin': '',
+#     'Debt to Equity': '',
+#     '% of Insider Purchasing': '',
+#     'Score': 67,
+#     }
+# update_score(data)
+# print(data["Score"])

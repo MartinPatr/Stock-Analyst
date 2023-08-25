@@ -14,7 +14,8 @@ def stock_analysis(numStocks):
             html = get_frontpage_url(ticker)
             try:
                 data = get_data(html, ticker)
-            except:
+            except Exception as e:
+                print(e)
                 print("Unable to retrieve main page statistics")
             if data is not False:
                 # Replace empty values with False
@@ -45,7 +46,7 @@ def stock_analysis(numStocks):
         # Run detailed analysis on the top 100 stocks
         for i, stock in enumerate(sorted_stocks):
             print()
-            print("Detailed analysis: " + str(i))
+            print("Detailed analysis: " + str(i+1))
             update_score(stock)
         # Close the driver
         close_driver()
@@ -69,6 +70,5 @@ def print_data(stocks, numStocks):
         print(f"Description: {stock['Description']}") 
 
 
-stocks = stock_analysis(99)
-print(len(stocks))
+stocks = stock_analysis(249)
 print_data(stocks,10)
