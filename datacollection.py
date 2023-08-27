@@ -4,7 +4,6 @@ import requests
 # Get the front page 
 def get_frontpage_url(stock_symbol):
     url = f"https://www.marketwatch.com/investing/stock/{stock_symbol}/company-profile?mod=mw_quote_tab"
-    print()
     print(url)
     print("Ticker: " + stock_symbol)
     html = requests.get(url)
@@ -49,14 +48,27 @@ def get_data(html,stock_symbol):
     pe_value_element = soup.find_all('bg-quote', {'class': 'value'})
     pe_sector_element = soup.find_all('span', {'class': 'primary'})
     pe_na_element = soup.find_all('td',{'class':'is-na'})
+    volume_elements = soup.find_all('span', {'class': 'primary'})
+    volume = volume_elements[1].text
     state = soup.find('div', {'class': 'status'})
+    # Too many NA's
     if len(pe_na_element) > 13:
         print("Not enough information")
         return False
+    # Stock is closed
     elif state.text == "Closed":
         print("Stock is closed")
         return False
     elif len(pe_ratio_element) == 29:
+        if "M" not in volume and "B" not in volume:
+            if "K" in volume:
+                volume = float(volume.replace("K","").replace("Volume: ","").strip())      
+                if volume < 400:
+                    print("Not enough volume")
+                    return False
+            else:
+                print("Not enough volume")
+                return False
         data['Ticker'] = stock_symbol
         data['Price'] = pe_value_element[0].text
         data['Industry'] = pe_sector_element[6].text
@@ -86,3 +98,6 @@ def get_data(html,stock_symbol):
         pass
     
     return data
+
+html = get_frontpage_url("ACAD")
+print(get_data(html, "ACAD"))

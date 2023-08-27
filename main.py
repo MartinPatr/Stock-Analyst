@@ -8,7 +8,8 @@ def stock_analysis(numStocks):
     stocks = []
     with open('data/validtickers.txt', 'r') as file:
         for i, line in enumerate(file):
-            print("Number: " + str(i))
+            print()
+            print("Number: " + str(i+1))
             tickerList = line.strip().split()
             ticker = str(tickerList[0])
             html = get_frontpage_url(ticker)
@@ -24,9 +25,11 @@ def stock_analysis(numStocks):
                         data[key] = False
                 # Calculate the score
                 calculate_score(data)
+                if data["Ticker"] == False:
+                    print("Stock has no ticker " + str(i+1))
                 stocks.append(data)
             # Only analyze the amount of stocks specified
-            if i == numStocks:  
+            if i == numStocks-1:  
                 break
             # Sleep for 1 minute every 250 requests to avoid getting blocked
             elif i % 250 == 0 and i != 0:
@@ -38,16 +41,18 @@ def stock_analysis(numStocks):
         # Only keep the top 100 stocks
         numStocks = 25
         i = 0
-        for stock in sorted_stocks.copy():
+        for i,stock in enumerate(sorted_stocks.copy()):
             if i >= numStocks:
                 sorted_stocks.remove(stock)
-            i += 1
+            else:
+                print(stock)
 
         # Run detailed analysis on the top 100 stocks
         for i, stock in enumerate(sorted_stocks):
             print()
             print("Detailed analysis: " + str(i+1))
             update_score(stock)
+
         # Close the driver
         close_driver()
 
@@ -70,5 +75,5 @@ def print_data(stocks, numStocks):
         print(f"Description: {stock['Description']}") 
 
 
-stocks = stock_analysis(249)
+stocks = stock_analysis(100)
 print_data(stocks,10)

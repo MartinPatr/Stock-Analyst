@@ -41,7 +41,6 @@ def get_financials(data):
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     financial_elements = soup.find_all('tr', {'class': 'table__row'})
-    print("Financial elements: " + str(len(financial_elements)))
 
     # Attempt to
     try:
@@ -91,7 +90,6 @@ def get_analyst_estimates(data):
     #Use BeautifulSoup to parse the html
     soup = BeautifulSoup(html, 'html.parser')
     ae_elements = soup.find_all('td', {'class': 'w25'})
-    print(len(ae_elements))
     try:
         data['Recommendation'] = ae_elements[0].text
         data['Target Price'] = ae_elements[1].text
