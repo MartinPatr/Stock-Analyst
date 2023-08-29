@@ -4,7 +4,7 @@ from general_analysis import calculate_score
 from detailed_analysis import update_score, close_driver
 
 # Calculate the final score for each stock
-def stock_analysis(numStocks):
+def stock_analysis(numStocks, secondRound):
     stocks = []
     removeStocks = []
     ignoreStocks = []
@@ -17,7 +17,7 @@ def stock_analysis(numStocks):
     with open('data/validtickers.txt', 'r') as file:
         for i, line in enumerate(file):
             # Only analyze the amount of stocks specified
-            if i == numStocks-1:  
+            if i == numStocks:  
                 break
 
             # Sleep for 1 minute every 250 requests to avoid getting blocked
@@ -55,11 +55,10 @@ def stock_analysis(numStocks):
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
 
-        # Only keep the top 100 stocks
-        numStocks = 2
+        # Only keep the top secondRound stocks
         i = 0
         for i,stock in enumerate(sorted_stocks.copy()):
-            if i >= numStocks:
+            if i >= secondRound:
                 sorted_stocks.remove(stock)
 
         # Run detailed analysis on the top 100 stocks
@@ -98,5 +97,5 @@ def print_data(stocks, numStocks):
         print(f"Description: {stock['Description']}") 
 
 
-stocks = stock_analysis(100)
+stocks = stock_analysis(499,25)
 print_data(stocks,10)

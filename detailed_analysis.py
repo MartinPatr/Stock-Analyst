@@ -5,7 +5,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-
 # Set up the driver
 options = Options()
 options.add_argument('--disable-browser-side-navigation')
@@ -41,13 +40,24 @@ def get_financials(data):
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     financial_elements = soup.find_all('tr', {'class': 'table__row'})
+    print()
 
     # Attempt to
     try:
-        data["Profit Margin"] = financial_elements[21].find_all('td')[5].text.replace('%','')
-        data["Net Income %"] = financial_elements[50].find_all('td')[5].text.replace('%','')
-        data["EPS %"] = financial_elements[63].find_all('td')[5].text.replace('%','')
-        if data["Profit Margin"] == "-" or data["Profit Margin"] == "-" or data["Profit Margin"] == "-":
+        # Get the position of the profit margin, net income %, and eps %
+        pmPosition = len(financial_elements[21].find_all('td')) - 2
+        niPosition = len(financial_elements[50].find_all('td')) - 2
+        epsPosition = len(financial_elements[63].find_all('td')) - 2
+
+        # Check if the profit margin is the first element
+        if "Gross Profit Margin" in financial_elements[21].find_all('td')[0].text:
+            data["Profit Margin"] = financial_elements[21].find_all('td')[pmPosition].text.replace('%','')
+        else:
+            data["Profit Margin"] = 0
+        data["Net Income %"] = financial_elements[50].find_all('td')[niPosition].text.replace('%','')
+        data["EPS %"] = financial_elements[63].find_all('td')[epsPosition].text.replace('%','')
+        # If any of the values are NA, set the score to 0
+        if data["Profit Margin"] == "-" or data["Net Income %"] == "-" or data["EPS %"] == "-":
             data['Score'] = 0
             return
         update_score_financials(data)
@@ -142,7 +152,7 @@ def close_driver():
 
 
 # data = {
-#     'Ticker': 'ACMR',
+#     'Ticker': 'AAPL',
 #     'Price': '176.40',
 #     'Industry': '',
 #     'Sector': '',
