@@ -59,15 +59,15 @@ def get_financials(data):
 def update_score_financials(data):
     # Update the score based on the profit margin
     profit_margin = float(data["Profit Margin"])
-    data['Score'] = round(data["Score"] * (1 + (profit_margin/150)),2)
+    data['Score'] = round(data["Score"] * (1 + (profit_margin/225)),2)
 
     # Update the score based on the net income %
     net_income = float(data["Net Income %"])
-    data['Score'] = round(data["Score"] * (1 + (net_income/200)),2)
+    data['Score'] = round(data["Score"] * (1 + (net_income/225)),2)
 
     # Update the score based on the EPS
     eps = float(data["EPS %"])
-    data['Score'] = round(data["Score"] * (1 + (eps/200)),2)
+    data['Score'] = round(data["Score"] * (1 + (eps/225)),2)
 
 
 
@@ -122,7 +122,7 @@ def update_score_analysis(data):
     price_difference = target_price - current_price
     price_total = target_price + current_price
     price_difference_percentage = (price_difference/(price_total/2))/2
-    data["Score"] = round(data["Score"] * (1 + (price_difference_percentage)) ,2)
+    data["Score"] = round(data["Score"] * (1 + (price_difference_percentage/1.5)) ,2)
 
 
 # Close the popup window

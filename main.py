@@ -6,46 +6,61 @@ from detailed_analysis import update_score, close_driver
 # Calculate the final score for each stock
 def stock_analysis(numStocks):
     stocks = []
+    removeStocks = []
+    ignoreStocks = []
+
+    # Get the list of stocks to ignore
+    with open('data/ignoretickers.txt', 'r') as file:
+        for line in file:
+            ignoreStocks.append(line.strip())
+
     with open('data/validtickers.txt', 'r') as file:
         for i, line in enumerate(file):
+            # Only analyze the amount of stocks specified
+            if i == numStocks-1:  
+                break
+
+            # Sleep for 1 minute every 250 requests to avoid getting blocked
+            elif i % 250 == 0 and i != 0:
+                time.sleep(60)
+            
             print()
             print("Number: " + str(i+1))
             tickerList = line.strip().split()
             ticker = str(tickerList[0])
+
+            # Check if the ticker is on "ignore" list
+            if ticker in ignoreStocks:
+                print("Ticker is on ignore list")
+                ticker = False
+
             html = get_frontpage_url(ticker)
             try:
-                data = get_data(html, ticker)
+                data = get_data(html)
             except Exception as e:
                 print(e)
                 print("Unable to retrieve main page statistics")
             if data is not False:
-                # Replace empty values with False
-                for key in data:
-                    if data[key] == '' or data[key] == 'N/A':
-                        data[key] = False
-                # Calculate the score
-                calculate_score(data)
-                if data["Ticker"] == False:
-                    print("Stock has no ticker " + str(i+1))
-                stocks.append(data)
-            # Only analyze the amount of stocks specified
-            if i == numStocks-1:  
-                break
-            # Sleep for 1 minute every 250 requests to avoid getting blocked
-            elif i % 250 == 0 and i != 0:
-                time.sleep(60)
+                if data['State'] == "Closed":
+                    removeStocks.append(data)
+                else:
+                    # Replace empty values with False
+                    for key in data:
+                        if data[key] == '' or data[key] == 'N/A':
+                            data[key] = False
+                    # Calculate the score
+                    calculate_score(data)
+                    stocks.append(data)
        
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
 
         # Only keep the top 100 stocks
-        numStocks = 25
+        numStocks = 2
         i = 0
         for i,stock in enumerate(sorted_stocks.copy()):
             if i >= numStocks:
                 sorted_stocks.remove(stock)
-            else:
-                print(stock)
 
         # Run detailed analysis on the top 100 stocks
         for i, stock in enumerate(sorted_stocks):
@@ -58,7 +73,15 @@ def stock_analysis(numStocks):
 
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(sorted_stocks, key=lambda x: x['Score'], reverse=True)
+
+
+        # Add stocks that should be ignored to the ignore to ignoretickers.txt
+        with open("data/ignoretickers.txt", "a") as file:
+            for stock in removeStocks:
+                file.write(stock['Ticker'] + "\n")
+
         return sorted_stocks
+
 
 
 # Function to print out the data

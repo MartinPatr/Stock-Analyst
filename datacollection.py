@@ -3,6 +3,10 @@ import requests
 
 # Get the front page 
 def get_frontpage_url(stock_symbol):
+    # Check if the stock symbol is not false
+    if stock_symbol is False:
+        return stock_symbol
+
     url = f"https://www.marketwatch.com/investing/stock/{stock_symbol}/company-profile?mod=mw_quote_tab"
     print(url)
     print("Ticker: " + stock_symbol)
@@ -19,10 +23,15 @@ def get_data(html):
     if html is False:
         return html
 
+    #Use BeautifulSoup to parse the html
+    soup = BeautifulSoup(html.text, 'html.parser')
+
+
     # Create a dictionary to store the data
     data = {
-        'Ticker': soup.find('span', {'class': 'company__ticker'}),
+        'Ticker': soup.find('span', {'class': 'company__ticker'}).text,
         'Price': '',
+        'State': 'Open',
         'Industry': '',
         'Sector': '',
         'Description': '',
@@ -38,9 +47,6 @@ def get_data(html):
         '% of Insider Purchasing': '',
         'Score': '',
     }
-
-    #Use BeautifulSoup to parse the html
-    soup = BeautifulSoup(html.text, 'html.parser')
     
     # Finding main page stats
     pe_ratio_element = soup.find_all('td', {'class': 'w25'})
@@ -58,7 +64,8 @@ def get_data(html):
     # Stock is closed
     elif state.text == "Closed":
         print("Stock is closed")
-        return False
+        data['State'] = "Closed"
+        return data
     elif len(pe_ratio_element) == 29:
         if "M" not in volume and "B" not in volume:
             if "K" in volume:
@@ -69,7 +76,6 @@ def get_data(html):
             else:
                 print("Not enough volume")
                 return False
-        data['Ticker'] = stock_symbol
         data['Price'] = pe_value_element[0].text
         data['Industry'] = pe_sector_element[6].text
         data['Sector'] = pe_sector_element[7].text

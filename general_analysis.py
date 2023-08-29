@@ -5,11 +5,11 @@ def calculate_score(data):
         'P/E': 0.2,
         'P/S': 0.15,
         'P/B': 0.15,
-        'Current Ratio': 0.1,
-        'Cash Ratio': 0.1,
+        'Current Ratio': 0.125,
+        'Cash Ratio': 0.125,
         'Gross Margin': 0.1,
         'Debt to Equity': 0.1,
-        '% of Insider Purchasing': 0.1,
+        '% of Insider Purchasing': 0.05,
     }
 
     # Ideal ranges for each factor 
