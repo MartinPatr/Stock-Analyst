@@ -142,7 +142,7 @@ def close_driver():
 
 
 # data = {
-#     'Ticker': 'AAPl',
+#     'Ticker': 'ACMR',
 #     'Price': '176.40',
 #     'Industry': '',
 #     'Sector': '',
@@ -160,4 +160,4 @@ def close_driver():
 #     'Score': 67,
 #     }
 # update_score(data)
-# print(data["Score"])
+# print(data)

@@ -15,13 +15,13 @@ def get_frontpage_url(stock_symbol):
 
 
 # Get the data from the front page
-def get_data(html,stock_symbol):
+def get_data(html):
     if html is False:
         return html
 
     # Create a dictionary to store the data
     data = {
-        'Ticker': '',
+        'Ticker': soup.find('span', {'class': 'company__ticker'}),
         'Price': '',
         'Industry': '',
         'Sector': '',
@@ -99,5 +99,5 @@ def get_data(html,stock_symbol):
     
     return data
 
-html = get_frontpage_url("ACAD")
-print(get_data(html, "ACAD"))
+# html = get_frontpage_url("ACMR")
+# print(get_data(html, "ACMR"))
