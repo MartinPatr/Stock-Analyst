@@ -32,6 +32,7 @@ def get_data(html):
         'Ticker': soup.find('span', {'class': 'company__ticker'}).text,
         'Price': '',
         'State': 'Open',
+        'Volume': '',
         'Industry': '',
         'Sector': '',
         'Description': '',
@@ -45,6 +46,9 @@ def get_data(html):
         'Gross Margin': '',
         'Debt to Equity': '',
         '% of Insider Purchasing': '',
+        'Net Income %': '',
+        'Target Price': '',
+        'Recommendation': '',
         'Score': '',
     }
     
@@ -77,6 +81,7 @@ def get_data(html):
                 print("Not enough volume")
                 return False
         data['Price'] = pe_value_element[0].text
+        data['Volume'] = volume
         data['Industry'] = pe_sector_element[6].text
         data['Sector'] = pe_sector_element[7].text
         data['Description'] = pe_description_element.text

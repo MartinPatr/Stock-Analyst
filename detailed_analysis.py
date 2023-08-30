@@ -40,24 +40,18 @@ def get_financials(data):
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
     financial_elements = soup.find_all('tr', {'class': 'table__row'})
-    print()
 
     # Attempt to
     try:
         # Get the position of the profit margin, net income %, and eps %
-        pmPosition = len(financial_elements[21].find_all('td')) - 2
         niPosition = len(financial_elements[50].find_all('td')) - 2
         epsPosition = len(financial_elements[63].find_all('td')) - 2
 
-        # Check if the profit margin is the first element
-        if "Gross Profit Margin" in financial_elements[21].find_all('td')[0].text:
-            data["Profit Margin"] = financial_elements[21].find_all('td')[pmPosition].text.replace('%','')
-        else:
-            data["Profit Margin"] = 0
-        data["Net Income %"] = financial_elements[50].find_all('td')[niPosition].text.replace('%','')
-        data["EPS %"] = financial_elements[63].find_all('td')[epsPosition].text.replace('%','')
+
+        data["Net Income %"] = financial_elements[50].find_all('td')[niPosition].text.replace('%','').replace(',', '')
+        data["EPS %"] = financial_elements[63].find_all('td')[epsPosition].text.replace('%','').replace(',', '')
         # If any of the values are NA, set the score to 0
-        if data["Profit Margin"] == "-" or data["Net Income %"] == "-" or data["EPS %"] == "-":
+        if data["Net Income %"] == "-" or data["EPS %"] == "-":
             data['Score'] = 0
             return
         update_score_financials(data)
@@ -67,17 +61,14 @@ def get_financials(data):
 
 # Updates the score of the ticker based on the information that we found on the financials page
 def update_score_financials(data):
-    # Update the score based on the profit margin
-    profit_margin = float(data["Profit Margin"])
-    data['Score'] = round(data["Score"] * (1 + (profit_margin/225)),2)
 
     # Update the score based on the net income %
     net_income = float(data["Net Income %"])
-    data['Score'] = round(data["Score"] * (1 + (net_income/225)),2)
+    data['Score'] = round(data["Score"] * (get_multiplier(net_income,300)),2)
 
     # Update the score based on the EPS
     eps = float(data["EPS %"])
-    data['Score'] = round(data["Score"] * (1 + (eps/225)),2)
+    data['Score'] = round(data["Score"] * (get_multiplier(eps,300)),2)
 
 
 
@@ -109,7 +100,16 @@ def get_analyst_estimates(data):
         data['Score'] = 0
 
 # Updates the score of the ticker based on the information that we found on the analysis page
-def update_score_analysis(data):
+def update_score_analysis(data):    
+    # Update the score based on the target price
+    current_price = float(data['Price'])
+    target_price = float(data['Target Price'])
+
+    price_difference = target_price - current_price
+    price_total = target_price + current_price
+    price_difference_percentage = (price_difference/(price_total/2))/2
+    data["Score"] = round(data["Score"] * (1 + (price_difference_percentage/1.5)) ,2)
+
     # Update the score based on the expert recommendation
     if data['Recommendation'] == 'Buy':
         data['Score'] = round(data["Score"] * 1.33,2)
@@ -124,16 +124,13 @@ def update_score_analysis(data):
     else:
         print("No recommendation found")
         data["Score"] = 0
-    
-    # Update the score based on the target price
-    current_price = float(data['Price'])
-    target_price = float(data['Target Price'])
 
-    price_difference = target_price - current_price
-    price_total = target_price + current_price
-    price_difference_percentage = (price_difference/(price_total/2))/2
-    data["Score"] = round(data["Score"] * (1 + (price_difference_percentage/1.5)) ,2)
-
+# Gets multiplier based on the value and weight
+def get_multiplier(value, weight):
+    if 1 + value/weight < 0:
+        return 0.15
+    else:
+        return 1 + value/weight
 
 # Close the popup window
 def close_popup():
@@ -152,8 +149,8 @@ def close_driver():
 
 
 # data = {
-#     'Ticker': 'AAPL',
-#     'Price': '176.40',
+#     'Ticker': 'ACDC',
+#     'Price': '11.56',
 #     'Industry': '',
 #     'Sector': '',
 #     'Description': '',

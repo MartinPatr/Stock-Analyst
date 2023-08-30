@@ -20,9 +20,9 @@ def stock_analysis(numStocks, secondRound):
             if i == numStocks:  
                 break
 
-            # Sleep for 1 minute every 250 requests to avoid getting blocked
+            # Sleep for 15 seconds every 250 requests to avoid getting blocked
             elif i % 250 == 0 and i != 0:
-                time.sleep(60)
+                time.sleep(15)
             
             print()
             print("Number: " + str(i+1))
@@ -55,6 +55,7 @@ def stock_analysis(numStocks, secondRound):
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
 
+        print_data(sorted_stocks,15)
         # Only keep the top secondRound stocks
         i = 0
         for i,stock in enumerate(sorted_stocks.copy()):
@@ -92,10 +93,10 @@ def print_data(stocks, numStocks):
         print()
         print("--------------------------------------------------")
         print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
-        print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}, Insider Trading Score: {stock['% of Insider Purchasing']}")
-        print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}")
+        print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}, Volume: {stock['Volume']}")
+        print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}, Net Income Growth: {stock['Net Income %']}%, Profit Margin: {stock['Profit Margin']}%")
         print(f"Description: {stock['Description']}") 
 
 
-stocks = stock_analysis(499,25)
+stocks = stock_analysis(100,10)
 print_data(stocks,10)
