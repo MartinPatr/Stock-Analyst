@@ -4,6 +4,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from datacollection import check_error
 
 # Set up the driver
 options = Options()
@@ -49,6 +50,10 @@ def get_financials(data):
 
     # Get the html from the page
     html = driver.page_source
+    # Check if the page has loaded successfully
+    if "403 Forbidden" in html:
+        check_error(html)
+
     soup = BeautifulSoup(html, 'html.parser')
     financial_elements = soup.find_all('tr', {'class': 'table__row'})
 

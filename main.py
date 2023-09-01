@@ -19,15 +19,9 @@ def stock_analysis(numStocks, secondRound):
             # Only analyze the amount of stocks specified
             if i == numStocks:  
                 break
+            # Check if the number of requests
+            check_number_requests(i)
 
-            # Sleep for 1 minute every 1000 requests to avoid getting blocked
-            elif i % 1000 == 0 and i != 0:
-                time.sleep(60)
-
-            # Sleep for 30 seconds every 250 requests to avoid getting blocked
-            elif i % 250 == 0 and i != 0:
-                time.sleep(30)
-            
             print()
             print("Number: " + str(i+1))
             tickerList = line.strip().split()
@@ -102,5 +96,19 @@ def print_data(stocks, numStocks):
         print(f"Description: {stock['Description']}") 
 
 
-stocks = stock_analysis(3499,100)
-print_data(stocks,20)
+# Function to check the number of requests made and sleep if necessary
+def check_number_requests(i):
+    # If the number of requests is 0, return
+    if i == 0:
+        return
+    # Sleep for 1 minute every 1000 requests to avoid getting blocked
+    elif i % 1000 == 0:
+        time.sleep(60)
+    # Sleep for 30 seconds every 250 requests to avoid getting blocked
+    elif i % 250 == 0:
+        time.sleep(30)
+
+            
+# Run the program
+stocks = stock_analysis(80,10)
+print_data(stocks,10)
