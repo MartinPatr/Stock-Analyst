@@ -19,6 +19,17 @@ ChromeOptions = webdriver.ChromeOptions()
 
 # Updates the score of the ticker
 def update_score(data):
+   
+   # Making sure no negative scores are used
+    if data['Score'] < 0:
+        lower_bound = -10
+        upper_bound = 0
+
+        score_range = upper_bound - lower_bound
+        adjusted_score = (data['Score'] - lower_bound) / score_range * 4 + 5
+            
+        data['Score'] = max(1, min(adjusted_score, 5))
+   
     # Get the ticker symbol
     stock_symbol = data["Ticker"]
     url = f"https://www.marketwatch.com/investing/stock/{stock_symbol}/financials?mod=mw_quote_tab"
@@ -128,7 +139,7 @@ def update_score_analysis(data):
 # Gets multiplier based on the value and weight
 def get_multiplier(value, weight):
     if 1 + value/weight < 0:
-        return 0.15
+        return 0.10
     else:
         return 1 + value/weight
 

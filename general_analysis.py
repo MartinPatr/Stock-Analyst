@@ -34,7 +34,6 @@ def calculate_score(data):
     for factor, weight in weightages.items():
         if factor in ideal_ranges and data[factor] != False:
             value = data[factor]
-            print("Factor: " + factor)
             if not isinstance(value, int):
                 value = float(value.replace(",", "").replace("%", ""))
 
@@ -42,15 +41,13 @@ def calculate_score(data):
 
             # Normalize the value to a range between 0 and 1
             normalized_value = (value - min_val) / (max_val - min_val)
-            print("Value " + str(normalized_value))
             # Calculate score for the factor based on its distance from the ideal range
             factor_score = (1 - abs(normalized_value - 0.5)) * weight
             # Apply logarithmic adjustment if factor_score is less than -0.4
-            if factor_score < -0.4:
-                factor_score = -0.4 + (1 - abs(factor_score / -0.4)) * math.log(abs(factor_score) + 0.4)
+            if factor_score < -0.25:
+                factor_score = -0.25 + (1 - abs(factor_score / -0.25)) * math.log(abs(factor_score) + 0.25)
         
             score += factor_score
-            print("Score: " + str(score))
 
 
     # Store the overall score in the data dictionary
@@ -58,23 +55,23 @@ def calculate_score(data):
     data['Score'] = score
 
 
-data = {
-    'Ticker': 'ACB',
-    'Price': '0.4420',
-    'Industry': '',
-    'Sector': '',
-    'Description': '',
-    'Market Cap': '',
-    'P/E': False,
-    'P/S': "1.30",
-    'P/B': "0.67",
-    'EV/Sales': "0.55",
-    'Current Ratio': "1.98",
-    "Cash Ratio": "1.24",
-    'Gross Margin': "-27.59",
-    'Debt to Equity': "46",
-    '% of Insider Purchasing': "100",
-    'Score': "67",
-    }
-calculate_score(data)
-print(data)
+# data = {
+#     'Ticker': 'ACB',
+#     'Price': '0.4420',
+#     'Industry': '',
+#     'Sector': '',
+#     'Description': '',
+#     'Market Cap': '',
+#     'P/E': False,
+#     'P/S': "1.30",
+#     'P/B': "0.67",
+#     'EV/Sales': "0.55",
+#     'Current Ratio': "1.98",
+#     "Cash Ratio": "1.24",
+#     'Gross Margin': "-27.59",
+#     'Debt to Equity': "46",
+#     '% of Insider Purchasing': "100",
+#     'Score': "67",
+#     }
+# calculate_score(data)
+# print(data)

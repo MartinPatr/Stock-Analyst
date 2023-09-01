@@ -110,5 +110,15 @@ def get_data(html):
     
     return data
 
+# Check for 403 Error
+def check_error(html):
+    if html.status_code == 403:
+        print("Error 403: Forbidden")
+        return False
+    else:
+        return True
+
+
+
 # html = get_frontpage_url("ACMR")
 # print(get_data(html, "ACMR"))

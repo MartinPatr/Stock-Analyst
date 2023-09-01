@@ -20,9 +20,13 @@ def stock_analysis(numStocks, secondRound):
             if i == numStocks:  
                 break
 
-            # Sleep for 15 seconds every 250 requests to avoid getting blocked
+            # Sleep for 1 minute every 1000 requests to avoid getting blocked
+            elif i % 1000 == 0 and i != 0:
+                time.sleep(60)
+
+            # Sleep for 30 seconds every 250 requests to avoid getting blocked
             elif i % 250 == 0 and i != 0:
-                time.sleep(15)
+                time.sleep(30)
             
             print()
             print("Number: " + str(i+1))
@@ -94,9 +98,9 @@ def print_data(stocks, numStocks):
         print("--------------------------------------------------")
         print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
         print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}, Volume: {stock['Volume']}")
-        print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}, Net Income Growth: {stock['Net Income %']}%, Profit Margin: {stock['Profit Margin']}%")
+        print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}, Net Income Growth: {stock['Net Income %']}%, Profit Margin: {stock['Gross Margin']}%")
         print(f"Description: {stock['Description']}") 
 
 
-stocks = stock_analysis(100,10)
-print_data(stocks,10)
+stocks = stock_analysis(3499,100)
+print_data(stocks,20)
