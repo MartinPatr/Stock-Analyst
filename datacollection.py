@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import time
 
 # Get the front page 
 def get_frontpage_url(stock_symbol):
@@ -14,6 +15,7 @@ def get_frontpage_url(stock_symbol):
     if html.status_code == 200:
         return html
     else:
+        check_error(html)
         print("Unable to retrieve front page statistics")
         return False
 
@@ -113,11 +115,22 @@ def get_data(html):
 # Check for 403 Error
 def check_error(html):
     if html.status_code == 403:
-        print("Error 403: Forbidden")
-        return False
+        check_status(html)
     else:
-        return True
+        return 
 
+# Continuously check for 403 Error
+def check_status(html):
+    delay = 5  # Initial delay time in seconds
+    while html.status_code == 403:
+        print("Checking for 403 Error")
+        time.sleep(delay)
+        delay = min(delay * 2, 20*60)  # Double the delay time, capped at 15 minutes
+        html = requests.get("https://www.marketwatch.com/investing/stock/AAPL/company-profile?mod=mw_quote_tab")
+        if html.status_code == 200:
+            print("403 Error has been resolved")
+            break
+    return
 
 
 # html = get_frontpage_url("ACMR")
