@@ -53,7 +53,6 @@ def stock_analysis(numStocks, secondRound):
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
 
-        print_data(sorted_stocks,15)
         # Only keep the top secondRound stocks
         i = 0
         for i,stock in enumerate(sorted_stocks.copy()):
@@ -91,8 +90,8 @@ def print_data(stocks, numStocks):
         print()
         print("--------------------------------------------------")
         print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
-        print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}, Volume: {stock['Volume']}")
-        print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}, Net Income Growth: {stock['Net Income %']}%, Profit Margin: {stock['Gross Margin']}%")
+        print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}, {stock['Volume']}")
+        print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}, Net Income Growth: {stock['Net Income %']}%, Profit Margin: {stock['Gross Margin']}")
         print(f"Description: {stock['Description']}") 
 
 
@@ -110,5 +109,5 @@ def check_number_requests(i):
 
             
 # Run the program
-stocks = stock_analysis(80,10)
+stocks = stock_analysis(249,10)
 print_data(stocks,10)

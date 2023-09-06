@@ -68,6 +68,7 @@ def get_financials(data):
         data["EPS %"] = financial_elements[63].find_all('td')[epsPosition].text.replace('%','').replace(',', '')
         # If any of the values are NA, set the score to 0
         if data["Net Income %"] == "-" or data["EPS %"] == "-":
+            print("Failed to update score as one of the values is NA")
             data['Score'] = 0
             return
         update_score_financials(data)
@@ -92,7 +93,7 @@ def update_score_financials(data):
 def get_analyst_estimates(data):
     # Go to the analyst estimates page
     try:
-        button = driver.find_element(By.XPATH,"//a[text()='Analyst Estimates']")
+        button = WebDriverWait(driver, 1.5).until(EC.element_to_be_clickable((By.XPATH,"//a[text()='Analyst Estimates']")))
         button.click()
     except:
         print("Stock is closed")
@@ -165,7 +166,7 @@ def close_driver():
 
 
 # data = {
-#     'Ticker': 'ACDC',
+#     'Ticker': 'ALGM',
 #     'Price': '11.56',
 #     'Industry': '',
 #     'Sector': '',
