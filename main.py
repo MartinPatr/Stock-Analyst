@@ -4,59 +4,65 @@ from general_analysis import calculate_score
 from detailed_analysis import update_score, close_driver
 
 # Calculate the final score for each stock
-def stock_analysis(numStocks, secondRound):
+def stock_analysis(startStock,numStocks, secondRound):
     stocks = []
     removeStocks = []
     ignoreStocks = []
 
     # Get the list of stocks to ignore
     with open('data/ignoretickers.txt', 'r') as file:
-        for line in file:
+        for i, line in enumerate(file):
             ignoreStocks.append(line.strip())
+            
 
     with open('data/validtickers.txt', 'r') as file:
         for i, line in enumerate(file):
-            # Only analyze the amount of stocks specified
-            if i == numStocks:  
-                break
-            # Check if the number of requests
-            check_number_requests(i)
+            # Only start analyzing the stocks after the startStock
+            if i >= startStock-1:
+                # Only analyze the amount of stocks specified
+                if i == numStocks-1:  
+                    break
+                # Check if the number of requests
+                check_number_requests(i)
 
-            print()
-            print("Number: " + str(i+1))
-            tickerList = line.strip().split()
-            ticker = str(tickerList[0])
+                print()
+                print("Number: " + str(i+1))
+                tickerList = line.strip().split()
+                ticker = str(tickerList[0])
 
-            # Check if the ticker is on "ignore" list
-            if ticker in ignoreStocks:
-                print("Ticker is on ignore list")
-                ticker = False
+                # Check if the ticker is on "ignore" list
+                if ticker in ignoreStocks:
+                    print("Ticker is on ignore list")
+                    ticker = False
 
-            html = get_frontpage_url(ticker)
-            try:
-                data = get_data(html)
-            except Exception as e:
-                print(e)
-                print("Unable to retrieve main page statistics")
-            if data is not False:
-                if data['State'] == "Closed":
-                    removeStocks.append(data)
-                else:
-                    # Replace empty values with False
-                    for key in data:
-                        if data[key] == '' or data[key] == 'N/A':
-                            data[key] = False
-                    # Calculate the score
-                    calculate_score(data)
-                    stocks.append(data)
-       
+                html = get_frontpage_url(ticker)
+                try:
+                    data = get_data(html)
+                except Exception as e:
+                    print(e)
+                    print("Unable to retrieve main page statistics")
+                if data is not False:
+                    if data['State'] == "Closed":
+                        removeStocks.append(data)
+                    else:
+                        # Replace empty values with False
+                        for key in data:
+                            if data[key] == '' or data[key] == 'N/A':
+                                data[key] = False
+                        # Calculate the score
+                        calculate_score(data)
+                        stocks.append(data)
+        
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
 
         # Only keep the top secondRound stocks
         i = 0
         for i,stock in enumerate(sorted_stocks.copy()):
-            if i >= secondRound:
+            # If the user wants to analyze all the stocks, break
+            if secondRound.lower() == "all":
+                break
+            elif i >= secondRound:
                 sorted_stocks.remove(stock)
 
         # Run detailed analysis on the top 100 stocks
@@ -109,5 +115,5 @@ def check_number_requests(i):
 
             
 # Run the program
-stocks = stock_analysis(249,10)
+stocks = stock_analysis(300,350,"all")
 print_data(stocks,10)

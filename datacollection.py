@@ -79,6 +79,7 @@ def get_data(html):
                 if volume < 400:
                     print("Not enough volume")
                     return False
+                volume = "Volume: " + volume + "K"
             else:
                 print("Not enough volume")
                 return False
