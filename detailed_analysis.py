@@ -53,6 +53,7 @@ def get_financials(data):
     # Check if the page has loaded successfully
     if "403 Forbidden" in html:
         check_error(html)
+        html = driver.page_source
 
     soup = BeautifulSoup(html, 'html.parser')
     financial_elements = soup.find_all('tr', {'class': 'table__row'})

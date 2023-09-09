@@ -123,5 +123,5 @@ def check_number_requests(i):
 
             
 # Run the program
-stocks = stock_analysis(5002,5999,40)
-print_data(stocks,20)
+stocks = stock_analysis(0,2999,50)
+print_data(stocks,25)

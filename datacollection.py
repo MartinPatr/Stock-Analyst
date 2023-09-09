@@ -16,8 +16,8 @@ def get_frontpage_url(stock_symbol):
         return html
     else:
         check_error(html)
-        print("Unable to retrieve front page statistics")
-        return False
+        html = requests.get(url)
+        return html
 
 
 # Get the data from the front page
@@ -127,7 +127,7 @@ def check_status(html):
     while html.status_code == 403:
         print("Checking for 403 Error")
         time.sleep(delay)
-        delay = min(delay * 2, 20*60)  # Double the delay time, capped at 15 minutes
+        delay = min(delay * 2, 60*60)  # Double the delay time, capped at 1 hour
         html = requests.get("https://www.marketwatch.com/investing/stock/AAPL/company-profile?mod=mw_quote_tab")
         if html.status_code == 200:
             print("403 Error has been resolved")
