@@ -109,6 +109,7 @@ def get_data(html):
         amountSelling = len(sellingElements)
         data['% of Insider Purchasing'] = round(((amountBuying/(amountBuying + amountSelling))*100))
     except:
+        print("Unable to retrieve insider trading statistics")
         pass
     
     return data

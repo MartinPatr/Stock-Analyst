@@ -39,8 +39,10 @@ def stock_analysis(startStock,numStocks, secondRound):
                 try:
                     data = get_data(html)
                 except Exception as e:
+                    data = False
                     print(e)
                     print("Unable to retrieve main page statistics")
+                
                 if data is not False:
                     if data['State'] == "Closed":
                         removeStocks.append(data)
@@ -52,15 +54,16 @@ def stock_analysis(startStock,numStocks, secondRound):
                         # Calculate the score
                         calculate_score(data)
                         stocks.append(data)
-        
+            else:
+                print("Skipping stock: " + str(i+1))
         # Sort the stocks based on the score in descending order
         sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
-
+        
         # Only keep the top secondRound stocks
         i = 0
         for i,stock in enumerate(sorted_stocks.copy()):
             # If the user wants to analyze all the stocks, break
-            if secondRound.lower() == "all":
+            if type(secondRound) == str and secondRound.lower() == "all":
                 break
             elif i >= secondRound:
                 sorted_stocks.remove(stock)
@@ -69,7 +72,9 @@ def stock_analysis(startStock,numStocks, secondRound):
         for i, stock in enumerate(sorted_stocks):
             print()
             print("Detailed analysis: " + str(i+1))
+            print("Current Score: " + str(stock['Score']))
             update_score(stock)
+            print("Updated Score: " + str(stock['Score']))
 
         # Close the driver
         close_driver()
@@ -95,6 +100,7 @@ def print_data(stocks, numStocks):
             break
         print()
         print("--------------------------------------------------")
+        print(f"Number: {i+1}")
         print(f"Company: {stock['Ticker']}, Score: {stock['Score']}, Industry: {stock['Industry']}, Sector: {stock['Sector']}")           
         print(f"Price: {stock['Price']}, Target Price: {stock['Target Price']} ,Recommendation: {stock['Recommendation']}, {stock['Volume']}")
         print(f"P/E: {stock['P/E']}, P/S: {stock['P/S']}, P/B: {stock['P/B']}, EV/Sales: {stock['EV/Sales']}, Net Income Growth: {stock['Net Income %']}%, Profit Margin: {stock['Gross Margin']}")
@@ -108,12 +114,14 @@ def check_number_requests(i):
         return
     # Sleep for 1 minute every 1000 requests to avoid getting blocked
     elif i % 1000 == 0:
+        print("Sleeping for 1 minute")
         time.sleep(60)
     # Sleep for 30 seconds every 250 requests to avoid getting blocked
     elif i % 250 == 0:
+        print("Sleeping for 30 seconds")
         time.sleep(30)
 
             
 # Run the program
-stocks = stock_analysis(300,350,"all")
-print_data(stocks,10)
+stocks = stock_analysis(5002,5999,40)
+print_data(stocks,20)

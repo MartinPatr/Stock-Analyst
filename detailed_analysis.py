@@ -93,11 +93,10 @@ def update_score_financials(data):
 def get_analyst_estimates(data):
     # Go to the analyst estimates page
     try:
-        button = WebDriverWait(driver, 1.5).until(EC.element_to_be_clickable((By.XPATH,"//a[text()='Analyst Estimates']")))
+        button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH,"//a[text()='Analyst Estimates']")))
         button.click()
     except:
-        print("Stock is closed")
-        data['Score'] = 0
+        print("Could not find analyst estimates button")
         return
    
     # Wait for the page to load and close the popup
@@ -125,19 +124,19 @@ def update_score_analysis(data):
     price_difference = target_price - current_price
     price_total = target_price + current_price
     price_difference_percentage = (price_difference/(price_total/2))/2
-    data["Score"] = round(data["Score"] * (1 + (price_difference_percentage/1.5)) ,2)
+    data["Score"] = round(data["Score"] * (1 + (price_difference_percentage/2.5)) ,2)
 
     # Update the score based on the expert recommendation
     if data['Recommendation'] == 'Buy':
-        data['Score'] = round(data["Score"] * 1.33,2)
+        data['Score'] = round(data["Score"] * 1.18,2)
     elif data['Recommendation'] == 'Overweight':
-        data['Score'] = round(data["Score"] * 1.15,2)
+        data['Score'] = round(data["Score"] * 1.08,2)
     elif data['Recommendation'] == 'Hold':
         pass
     elif data['Recommendation'] == 'Underweight':
-        data['Score'] = round(data["Score"] * 0.85,2)
+        data['Score'] = round(data["Score"] * 0.90,2)
     elif data['Recommendation'] == 'Sell':
-        data['Score'] = round(data["Score"] * 0.67,2)
+        data['Score'] = round(data["Score"] * 0.80,2)
     else:
         print("No recommendation found")
         data["Score"] = 0
