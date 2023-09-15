@@ -21,19 +21,18 @@ def get_frontpage_url(stock_symbol):
 
 
 # Get the data from the front page
-def get_data(html,volumeRequired):
+def get_data(html,volumeRequired, numInfo):
     if html is False:
         return html
 
     #Use BeautifulSoup to parse the html
     soup = BeautifulSoup(html.text, 'html.parser')
 
-
+    
     # Create a dictionary to store the data
     data = {
         'Ticker': soup.find('span', {'class': 'company__ticker'}).text,
         'Price': '',
-        'Volume Requirement': fix_volume(volumeRequired),
         'State': 'Open',
         'Volume': '',
         'Industry': '',
@@ -54,6 +53,8 @@ def get_data(html,volumeRequired):
         'Recommendation': '',
         'Score': '',
     }
+    # The requirement variables
+    volumeRequired = fix_volume(volumeRequired)
     
 
     
@@ -68,7 +69,8 @@ def get_data(html,volumeRequired):
     volume = volume_elements[1].text
     state = soup.find('div', {'class': 'status'})
     # Too many NA's
-    if len(pe_na_element) > 13:
+    print("NA's: " + str(len(pe_na_element)))
+    if len(pe_na_element) < numInfo:
         print("Not enough information")
         return False
     # Stock is closed
@@ -78,7 +80,7 @@ def get_data(html,volumeRequired):
         return data
     elif len(pe_ratio_element) == 29:
         stockVolume = fix_volume(volume)
-        if stockVolume < data['Volume Requirement']:
+        if stockVolume < volumeRequired:
             print("Not enough volume")
             return False
         data['Price'] = pe_value_element[0].text
