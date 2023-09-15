@@ -21,7 +21,7 @@ def get_frontpage_url(stock_symbol):
 
 
 # Get the data from the front page
-def get_data(html):
+def get_data(html,volumeRequired):
     if html is False:
         return html
 
@@ -33,6 +33,7 @@ def get_data(html):
     data = {
         'Ticker': soup.find('span', {'class': 'company__ticker'}).text,
         'Price': '',
+        'Volume Requirement': fix_volume(volumeRequired),
         'State': 'Open',
         'Volume': '',
         'Industry': '',
@@ -54,6 +55,9 @@ def get_data(html):
         'Score': '',
     }
     
+
+    
+
     # Finding main page stats
     pe_ratio_element = soup.find_all('td', {'class': 'w25'})
     pe_description_element = soup.find('p', {'class': 'description__text'})
@@ -73,16 +77,10 @@ def get_data(html):
         data['State'] = "Closed"
         return data
     elif len(pe_ratio_element) == 29:
-        if "M" not in volume and "B" not in volume:
-            if "K" in volume:
-                volume = float(volume.replace("K","").replace("Volume: ","").strip())      
-                if volume < 400:
-                    print("Not enough volume")
-                    return False
-                volume = "Volume: " + volume + "K"
-            else:
-                print("Not enough volume")
-                return False
+        stockVolume = fix_volume(volume)
+        if stockVolume < data['Volume Requirement']:
+            print("Not enough volume")
+            return False
         data['Price'] = pe_value_element[0].text
         data['Volume'] = volume
         data['Industry'] = pe_sector_element[6].text
@@ -113,6 +111,21 @@ def get_data(html):
         pass
     
     return data
+
+
+# Fix volume given 
+def fix_volume(volume):
+    if "M" in volume:
+        volume = float(volume.replace("M","").replace("Volume: ","").strip()) * 1000000
+        return volume
+    elif "B" in volume:
+        volume = float(volume.replace("B","").replace("Volume: ","").strip()) * 1000000000
+        return volume
+    elif "K" in volume:
+        volume = float(volume.replace("K","").replace("Volume: ","").strip()) * 1000
+        return volume
+    else:
+        return float(volume)
 
 # Check for 403 Error
 def check_error(html):

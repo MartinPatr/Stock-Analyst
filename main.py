@@ -4,7 +4,7 @@ from general_analysis import calculate_score
 from detailed_analysis import update_score, close_driver
 
 # Calculate the final score for each stock
-def stock_analysis(startStock,numStocks, secondRound):
+def stock_analysis(startStock,numStocks, secondRound, volume):
     stocks = []
     removeStocks = []
     ignoreStocks = []
@@ -37,7 +37,7 @@ def stock_analysis(startStock,numStocks, secondRound):
 
                 html = get_frontpage_url(ticker)
                 try:
-                    data = get_data(html)
+                    data = get_data(html,volume)
                 except Exception as e:
                     data = False
                     print(e)
@@ -123,5 +123,5 @@ def check_number_requests(i):
 
             
 # Run the program
-stocks = stock_analysis(0,2999,50)
-print_data(stocks,25)
+stocks = stock_analysis(0,100,5,"0")
+print_data(stocks,5)
