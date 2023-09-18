@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import time
+from datetime import date
+
 
 # Get the front page 
 def get_frontpage_url(stock_symbol):
@@ -32,13 +34,14 @@ def get_data(html,volumeRequired, numInfo):
     # Create a dictionary to store the data
     data = {
         'Ticker': soup.find('span', {'class': 'company__ticker'}).text,
+        'Score': '',
         'Price': '',
         'State': 'Open',
         'Volume': '',
+        'Date': date.today().strftime("%m/%d/%Y"),
         'Industry': '',
         'Sector': '',
         'Description': '',
-        'Market Cap': '',
         'P/E': '',
         'P/S': '',
         'P/B': '',
@@ -51,7 +54,7 @@ def get_data(html,volumeRequired, numInfo):
         'Net Income %': '',
         'Target Price': '',
         'Recommendation': '',
-        'Score': '',
+        'EPS %': '',
     }
     # The requirement variables
     volumeRequired = fix_volume(volumeRequired)
@@ -69,8 +72,7 @@ def get_data(html,volumeRequired, numInfo):
     volume = volume_elements[1].text
     state = soup.find('div', {'class': 'status'})
     # Too many NA's
-    print("NA's: " + str(len(pe_na_element)))
-    if len(pe_na_element) < numInfo:
+    if len(pe_na_element) > numInfo:
         print("Not enough information")
         return False
     # Stock is closed

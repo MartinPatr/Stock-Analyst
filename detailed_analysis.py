@@ -60,13 +60,25 @@ def get_financials(data):
 
     # Attempt to
     try:
+        # Get the position of the net income growth and eps growth
+        for i, element in enumerate(financial_elements):
+            element = element.find_all('td')
+            if len(element) == 7:
+                try: 
+                    element = element[0].find_all('div')
+                    if element[1].text == "Net Income Growth":
+                        niIndex = i
+                    if element[1].text == "EPS (Diluted) Growth":
+                        epsIndex = i
+                except:
+                    pass
+
         # Get the position of the profit margin, net income %, and eps %
-        niPosition = len(financial_elements[50].find_all('td')) - 2
-        epsPosition = len(financial_elements[63].find_all('td')) - 2
+        niPosition = len(financial_elements[niIndex].find_all('td')) - 2    
+        epsPosition = len(financial_elements[epsIndex].find_all('td')) - 2
 
-
-        data["Net Income %"] = financial_elements[50].find_all('td')[niPosition].text.replace('%','').replace(',', '')
-        data["EPS %"] = financial_elements[63].find_all('td')[epsPosition].text.replace('%','').replace(',', '')
+        data["Net Income %"] = financial_elements[niIndex].find_all('td')[niPosition].text.replace('%','').replace(',', '')
+        data["EPS %"] = financial_elements[epsIndex].find_all('td')[epsPosition].text.replace('%','').replace(',', '')
         # If any of the values are NA, set the score to 0
         if data["Net Income %"] == "-" or data["EPS %"] == "-":
             print("Failed to update score as one of the values is NA")
@@ -75,7 +87,7 @@ def get_financials(data):
         update_score_financials(data)
     except Exception as e:
         print("Failed to update score based on financials: ", e)
-        data['Score'] = 0
+        data['Score'] = round(data['Score'] * 0.80,2)
 
 # Updates the score of the ticker based on the information that we found on the financials page
 def update_score_financials(data):
@@ -94,9 +106,10 @@ def update_score_financials(data):
 def get_analyst_estimates(data):
     # Go to the analyst estimates page
     try:
-        button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.XPATH,"//a[text()='Analyst Estimates']")))
+        button = WebDriverWait(driver, 2.5).until(EC.element_to_be_clickable((By.XPATH,"//a[text()='Analyst Estimates']")))
         button.click()
     except:
+        check_error(driver.page_source)
         print("Could not find analyst estimates button")
         return
    
@@ -114,7 +127,7 @@ def get_analyst_estimates(data):
         update_score_analysis(data)
     except Exception as e:
         print("Failed to update score based on analyst estimates: ", e)
-        data['Score'] = 0
+        data['Score'] = round(data['Score'] * 0.80,2)
 
 # Updates the score of the ticker based on the information that we found on the analysis page
 def update_score_analysis(data):    
@@ -166,7 +179,7 @@ def close_driver():
 
 
 # data = {
-#     'Ticker': 'ALGM',
+#     'Ticker': 'AAIC',
 #     'Price': '11.56',
 #     'Industry': '',
 #     'Sector': '',
