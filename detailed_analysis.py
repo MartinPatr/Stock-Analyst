@@ -1,21 +1,6 @@
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from datacollection import check_error
-
-# Set up the driver
-options = Options()
-options.add_argument('--disable-browser-side-navigation')
-options.add_argument('--headless')
-options.add_argument('--disable-gpu')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('window-size=1920x1080')
-options.add_argument("--disable-extensions")
-driver = webdriver.Chrome(options=options)
-ChromeOptions = webdriver.ChromeOptions()
+import requests
 
 
 # Updates the score of the ticker
@@ -23,7 +8,7 @@ def update_score(data):
    
    # Making sure no negative scores are used
     if data['Score'] < 0:
-        lower_bound = -10
+        lower_bound = -50
         upper_bound = 0
 
         score_range = upper_bound - lower_bound
@@ -36,26 +21,18 @@ def update_score(data):
     url = f"https://www.marketwatch.com/investing/stock/{stock_symbol}/financials?mod=mw_quote_tab"
     print(url)
     print("Ticker: " + stock_symbol)
-    driver.get(url)
-    get_financials(data)
-    get_analyst_estimates(data)
+    return url
 
-
-
-# Gets the financials from the financials page
-def get_financials(data):    
-    
-    # Wait for the page to load and close the popup
-    close_popup()
-
+# Retrieve the financials from the page
+def retrieve_financials(data):
     # Get the html from the page
-    html = driver.page_source
-    # Check if the page has loaded successfully
-    if "403 Forbidden" in html:
+    url = f"https://www.marketwatch.com/investing/stock/{data['Ticker']}/financials?mod=mw_quote_tab"
+    html = requests.get(url)
+    if html.status_code == 403:
         check_error(html)
-        html = driver.page_source
-
-    soup = BeautifulSoup(html, 'html.parser')
+        html = requests.get(url)
+    
+    soup = BeautifulSoup(html.text, 'html.parser')
     financial_elements = soup.find_all('tr', {'class': 'table__row'})
 
     # Attempt to
@@ -63,15 +40,14 @@ def get_financials(data):
         # Get the position of the net income growth and eps growth
         for i, element in enumerate(financial_elements):
             element = element.find_all('td')
-            if len(element) == 7:
-                try: 
-                    element = element[0].find_all('div')
-                    if element[1].text == "Net Income Growth":
-                        niIndex = i
-                    if element[1].text == "EPS (Diluted) Growth":
-                        epsIndex = i
-                except:
-                    pass
+            try: 
+                element = element[0].find_all('div')
+                if element[1].text == "Net Income Growth":
+                    niIndex = i
+                if element[1].text == "EPS (Diluted) Growth":
+                    epsIndex = i
+            except:
+                pass
 
         # Get the position of the profit margin, net income %, and eps %
         niPosition = len(financial_elements[niIndex].find_all('td')) - 2    
@@ -89,6 +65,27 @@ def get_financials(data):
         print("Failed to update score based on financials: ", e)
         data['Score'] = round(data['Score'] * 0.80,2)
 
+#  Retrieves the analyst estimates from the analyst estimates page
+def retrieve_analysis(data):
+    # Get the html from the page
+    url = f"https://www.marketwatch.com/investing/stock/{data['Ticker']}/analystestimates?mod=mw_quote_tab"
+    html = requests.get(url)
+    # If the page is not found, check the error and try again
+    if html.status_code == 403:
+        check_error(html)
+        html = requests.get(url)
+
+    # Use BeautifulSoup to parse the html
+    soup = BeautifulSoup(html.text, 'html.parser')
+    ae_elements = soup.find_all('td', {'class': 'w25'})
+    try:
+        data['Recommendation'] = ae_elements[0].text
+        data['Target Price'] = ae_elements[1].text
+        update_score_analysis(data)
+    except Exception as e:
+        print("Failed to update score based on analyst estimates: ", e)
+        data['Score'] = round(data['Score'] * 0.80,2)
+
 # Updates the score of the ticker based on the information that we found on the financials page
 def update_score_financials(data):
 
@@ -99,35 +96,6 @@ def update_score_financials(data):
     # Update the score based on the EPS
     eps = float(data["EPS %"])
     data['Score'] = round(data["Score"] * (get_multiplier(eps,300)),2)
-
-
-
-# Gets the analyst estimates from the analyst estimates page
-def get_analyst_estimates(data):
-    # Go to the analyst estimates page
-    try:
-        button = WebDriverWait(driver, 2.5).until(EC.element_to_be_clickable((By.XPATH,"//a[text()='Analyst Estimates']")))
-        button.click()
-    except:
-        check_error(driver.page_source)
-        print("Could not find analyst estimates button")
-        return
-   
-    # Wait for the page to load and close the popup
-    close_popup()
-    
-    # Get the html from the page
-    html = driver.page_source
-    #Use BeautifulSoup to parse the html
-    soup = BeautifulSoup(html, 'html.parser')
-    ae_elements = soup.find_all('td', {'class': 'w25'})
-    try:
-        data['Recommendation'] = ae_elements[0].text
-        data['Target Price'] = ae_elements[1].text
-        update_score_analysis(data)
-    except Exception as e:
-        print("Failed to update score based on analyst estimates: ", e)
-        data['Score'] = round(data['Score'] * 0.80,2)
 
 # Updates the score of the ticker based on the information that we found on the analysis page
 def update_score_analysis(data):    
@@ -161,40 +129,3 @@ def get_multiplier(value, weight):
         return 0.10
     else:
         return 1 + value/weight
-
-# Close the popup window
-def close_popup():
-    # Wait to see if the popup appears
-    try:
-        button = WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CLASS_NAME, 'close-btn')))
-        button.click()
-    except:
-        pass
-
-
-
-# Close the driver
-def close_driver():
-    driver.close()
-
-
-# data = {
-#     'Ticker': 'AAIC',
-#     'Price': '11.56',
-#     'Industry': '',
-#     'Sector': '',
-#     'Description': '',
-#     'Market Cap': '',
-#     'P/E': '',
-#     'P/S': '',
-#     'P/B': '',
-#     'EV/Sales': '',
-#     'Current Ratio': '',
-#     "Cash Ratio": "",
-#     'Gross Margin': '',
-#     'Debt to Equity': '',
-#     '% of Insider Purchasing': '',
-#     'Score': 67,
-#     }
-# update_score(data)
-# print(data)

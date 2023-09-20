@@ -1,7 +1,8 @@
 import time
 from datacollection import get_frontpage_url, get_data
 from general_analysis import calculate_score
-from detailed_analysis import update_score, close_driver
+from selenium_analysis import get_financials, close_driver
+from detailed_analysis import update_score,retrieve_financials, retrieve_analysis
 from populate_sheet import initialize_google_api, populate_sheet
 
 # Calculate the final score for each stock
@@ -11,7 +12,8 @@ from populate_sheet import initialize_google_api, populate_sheet
 # volume: The volume requirement for the stocks(Must be a string) - Used in get_data
 # numInfo: The maximum number of NA's to be analyized - Used in get_data
 # googleSheets: Whether or not to populate the Google Sheets
-def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleSheets=False):
+# selenium: Whether or not to use Selenium to retrieve the financials and analysis
+def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleSheets=False, selenium=False):
     stocks = []
     removeStocks = []
     ignoreStocks = []
@@ -72,35 +74,42 @@ def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleShe
                 if i >= secondRound:
                     stocks.remove(stock)
 
+
+        # Initialize the Google Sheets API, if the user wants to populate the Google Sheets
+        wks = initialize_google_api() if googleSheets else False
+        
         # Run detailed analysis on the top 100 stocks
         for i, stock in enumerate(stocks):
             print()
+            check_number_requests(startStock,numStocks,i, selenium)
             print("Detailed analysis: " + str(i+1))
             print("Current Score: " + str(stock['Score']))
-            update_score(stock)
+            url = update_score(stock)
+            # Check if the user wants to use selenium
+            if selenium:
+                get_financials(stock,url)
+            # If the user doesn't want to use selenium
+            else:
+                retrieve_financials(stock)
+                retrieve_analysis(stock)
             print("Updated Score: " + str(stock['Score']))
-
-        # Close the driver
-        close_driver()
+            # Check if the user wants to populate the Google Sheets
+            if googleSheets:
+                populate_sheet(wks,stock)
+        
+        if selenium:
+            # Close the driver
+            close_driver()
 
         # Add stocks that should be ignored to the ignore to ignoretickers.txt
         with open("data/ignoretickers.txt", "a") as file:
             for stock in removeStocks:
                 file.write(stock['Ticker'] + "\n")
 
-        # Check if the user wants to populate the Google Sheets
-        if googleSheets:
-            # Initialize the Google Sheets API
-            wks = initialize_google_api()
-            # Populate the sheet with the stocks
-            populate_sheet(wks,stocks)
-        else:
+        if not googleSheets:
             # Sort the stocks based on the score in descending order
             sorted_stocks = sorted(sorted_stocks, key=lambda x: x['Score'], reverse=True)
-
-
-        return sorted_stocks
-
+            return sorted_stocks
 
 
 # Function to print out the data
@@ -119,7 +128,10 @@ def print_data(stocks, numStocks):
 
 
 # Function to check the number of requests made and sleep if necessary
-def check_number_requests(start,end,i):
+def check_number_requests(start,end,i,selenium = True):
+    # If its the first stock, return
+    if i == start:
+        return
     numStocks = end - start + 1
     numThousands = numStocks // 500
     if numThousands == 0: 
@@ -129,14 +141,27 @@ def check_number_requests(start,end,i):
         return
     # Sleep for x minutes(Depends on how much is being analyized total) every 1000 requests to avoid getting blocked
     elif i % 1000 == 0:
-        print("Sleeping for 1 minute")
+        print("Sleeping for " + str(numThousands) + " minutes")
         time.sleep(60*(numThousands))
     # Sleep for 30 seconds every 250 requests to avoid getting blocked
     elif i % 250 == 0:
         print("Sleeping for 30 seconds")
         time.sleep(30)
+    # Sleep for 15 seconds every 50 requests to avoid getting blocked
+    elif i % 25 == 0 and not selenium:
+        print("Sleeping for 15 seconds")
+        time.sleep(15)
 
             
 # Run the program
-stocks = stock_analysis(51,499,"all","0",13,True)
-#print_data(stocks,10)
+Start = 6800
+End = 7217
+SecondRound = "all"
+minumum_volume = "0"
+max_NA = 15
+googleSheets = True
+use_selenium = False
+
+stocks = stock_analysis(Start,End,SecondRound,minumum_volume,max_NA,googleSheets, use_selenium)
+if not googleSheets:    
+    print_data(stocks,10)

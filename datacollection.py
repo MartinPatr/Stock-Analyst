@@ -59,9 +59,6 @@ def get_data(html,volumeRequired, numInfo):
     # The requirement variables
     volumeRequired = fix_volume(volumeRequired)
     
-
-    
-
     # Finding main page stats
     pe_ratio_element = soup.find_all('td', {'class': 'w25'})
     pe_description_element = soup.find('p', {'class': 'description__text'})
@@ -144,7 +141,7 @@ def check_status(html):
     while html.status_code == 403:
         print("Checking for 403 Error")
         time.sleep(delay)
-        delay = min(delay * 2, 60*60)  # Double the delay time, capped at 1 hour
+        delay = min(delay * 2, 60*20)  # Double the delay time, capped at 1 hour
         html = requests.get("https://www.marketwatch.com/investing/stock/AAPL/company-profile?mod=mw_quote_tab")
         if html.status_code == 200:
             print("403 Error has been resolved")
@@ -152,5 +149,3 @@ def check_status(html):
     return
 
 
-# html = get_frontpage_url("ACMR")
-# print(get_data(html, "ACMR"))
