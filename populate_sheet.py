@@ -32,10 +32,10 @@ def populate_sheet(wks,stock):
     if ticker in existing_data:
         # Update the existing row with the new data
         index = existing_data.index(ticker) + 1
-        print("Updating Row: " + str(index))
+        print(f"Updating Row for {ticker}: " + str(index))
         wks.update_values("A" + str(index) + ":" + "Z" + str(index), values=stock_data)
     else:
         # Append the new stock data to the bottom of the sheet
         row += 1
-        print("Adding Row: " + str(row))
+        print(f"Adding Row for {ticker}: " + str(row))
         wks.update_values("A" + str(row) + ":" + "Z" + str(row), values=stock_data)

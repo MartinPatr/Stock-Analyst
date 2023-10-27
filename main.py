@@ -4,6 +4,7 @@ from general_analysis import calculate_score
 from selenium_analysis import get_financials, close_driver
 from detailed_analysis import update_score,retrieve_financials, retrieve_analysis
 from populate_sheet import initialize_google_api, populate_sheet
+import concurrent.futures
 
 # Calculate the final score for each stock
 # startStock: The number of the stock to start analyzing
@@ -65,7 +66,7 @@ def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleShe
                         stocks.append(data)
 
         # If user wants all the stocks to go to the second round, then don't sort or remove any stocks
-        if type(secondRound) != str and secondRound.lower() != "all":
+        if type(secondRound) == str and secondRound.lower() != "all":
             # Sort the stocks based on the score in descending order
             stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
             # Only keep the top secondRound stocks
@@ -74,42 +75,62 @@ def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleShe
                 if i >= secondRound:
                     stocks.remove(stock)
 
+    # Initialize the Google Sheets API, if the user wants to populate the Google Sheets
+    wks = initialize_google_api() if googleSheets else False
 
-        # Initialize the Google Sheets API, if the user wants to populate the Google Sheets
-        wks = initialize_google_api() if googleSheets else False
-        
-        # Run detailed analysis on the top 100 stocks
-        for i, stock in enumerate(stocks):
+
+    # Combat memory leaks
+    ignoreStocks = file = html = tickerlist = None
+
+    # Number of threads
+    num_threads = 2  # You can adjust this to the desired number of threads
+
+    segment_size = len(stocks) // num_threads
+    stock_segment_1 = stocks[:segment_size]
+    stock_segment_2 = stocks[segment_size:]
+    print()
+    print("Running round 2 with " + str(num_threads) + " threads")
+    # Function for the thread to execute
+    def process_stock(stock,i, segment):
+        get_second_round_info(startStock, numStocks, i, stock, selenium, segment)
+
+    # Create a thread pool with two threads
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        futures = []
+
+        # Submit each stock in the first segment for processing in the first thread
+        for i, stock in enumerate(stock_segment_1):
+            future = executor.submit(process_stock, stock,i,1)
+            futures.append(future)
+
+        # Submit each stock in the second segment for processing in the second thread
+        for i, stock in enumerate(stock_segment_2):
+            future = executor.submit(process_stock, stock,i,2)
+            futures.append(future)
+
+        # Wait for all threads to finish
+        concurrent.futures.wait(futures)
+    
+    if selenium:
+        # Close the driver
+        close_driver()
+
+    # Add stocks that should be ignored to the ignore to ignoretickers.txt
+    with open("data/ignoretickers.txt", "a") as file:
+        for stock in removeStocks:
+            file.write(stock['Ticker'] + "\n")
+
+    if not googleSheets:
+        # Sort the stocks based on the score in descending order
+        sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
+        return sorted_stocks
+    else:
+        print()
+        print("Populating Google Sheets")
+        for stock in stocks:
+            # Populate the Google Sheets
             print()
-            check_number_requests(startStock,numStocks,i, selenium)
-            print("Detailed analysis: " + str(i+1))
-            print("Current Score: " + str(stock['Score']))
-            url = update_score(stock)
-            # Check if the user wants to use selenium
-            if selenium:
-                get_financials(stock,url)
-            # If the user doesn't want to use selenium
-            else:
-                retrieve_financials(stock)
-                retrieve_analysis(stock)
-            print("Updated Score: " + str(stock['Score']))
-            # Check if the user wants to populate the Google Sheets
-            if googleSheets:
-                populate_sheet(wks,stock)
-        
-        if selenium:
-            # Close the driver
-            close_driver()
-
-        # Add stocks that should be ignored to the ignore to ignoretickers.txt
-        with open("data/ignoretickers.txt", "a") as file:
-            for stock in removeStocks:
-                file.write(stock['Ticker'] + "\n")
-
-        if not googleSheets:
-            # Sort the stocks based on the score in descending order
-            sorted_stocks = sorted(sorted_stocks, key=lambda x: x['Score'], reverse=True)
-            return sorted_stocks
+            populate_sheet(wks, stock)
 
 
 # Function to print out the data
@@ -152,13 +173,26 @@ def check_number_requests(start,end,i,selenium = True):
         print("Sleeping for 15 seconds")
         time.sleep(15)
 
+def get_second_round_info(startStock,numStocks,i,stock,selenium,threadNum):
+    # Run detailed analysis on the top 100 stocks
+    check_number_requests(startStock,numStocks,i, selenium)
+    print(f"Thread {threadNum} - Current Score for {stock['Ticker']}:  {stock['Score']}")
+    url = update_score(stock)
+    # Check if the user wants to use selenium
+    if selenium:
+        get_financials(stock,url)
+    # If the user doesn't want to use selenium
+    else:
+        retrieve_financials(stock)
+        retrieve_analysis(stock)
+    print(f"Thread {threadNum} - Updated Score for {stock['Ticker']}:  {stock['Score']}")
             
 # Run the program
-Start = 6800
-End = 7217
+Start = 0
+End = 150
 SecondRound = "all"
 minumum_volume = "0"
-max_NA = 15
+max_NA = 10
 googleSheets = True
 use_selenium = False
 

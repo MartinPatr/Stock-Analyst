@@ -19,8 +19,6 @@ def update_score(data):
     # Get the ticker symbol
     stock_symbol = data["Ticker"]
     url = f"https://www.marketwatch.com/investing/stock/{stock_symbol}/financials?mod=mw_quote_tab"
-    print(url)
-    print("Ticker: " + stock_symbol)
     return url
 
 # Retrieve the financials from the page
