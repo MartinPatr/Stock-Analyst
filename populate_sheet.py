@@ -1,8 +1,8 @@
 import pygsheets
 
 # Initialize Google API, return worksheet
-def initialize_google_api():
-    service_file = 'creds/stock-analyzer-399116-08d460de6a23.json'
+def initialize_google_api(credentialsPath):
+    service_file = credentialsPath; 
     gc = pygsheets.authorize(service_file=service_file)
     sheet_name = "Stock Analyzer - Results"
     sh = gc.open(sheet_name)

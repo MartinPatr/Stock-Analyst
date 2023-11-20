@@ -1,4 +1,5 @@
 import time
+import json
 from datacollection import get_frontpage_url, get_data
 from general_analysis import calculate_score
 from selenium_analysis import get_financials, close_driver
@@ -14,7 +15,7 @@ import concurrent.futures
 # numInfo: The maximum number of NA's to be analyized - Used in get_data
 # googleSheets: Whether or not to populate the Google Sheets
 # selenium: Whether or not to use Selenium to retrieve the financials and analysis
-def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleSheets=False, selenium=False):
+def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleSheets=False, selenium=False, configurationPath="configuration.json"):
     stocks = []
     removeStocks = []
     ignoreStocks = []
@@ -76,7 +77,7 @@ def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleShe
                     stocks.remove(stock)
 
     # Initialize the Google Sheets API, if the user wants to populate the Google Sheets
-    wks = initialize_google_api() if googleSheets else False
+    wks = initialize_google_api(configurationPath) if googleSheets else False
 
 
     # Combat memory leaks
@@ -187,15 +188,27 @@ def get_second_round_info(startStock,numStocks,i,stock,selenium,threadNum):
         retrieve_analysis(stock)
     print(f"Thread {threadNum} - Updated Score for {stock['Ticker']}:  {stock['Score']}")
             
-# Run the program
-Start = 0
-End = 150
-SecondRound = "all"
-minumum_volume = "0"
-max_NA = 10
-googleSheets = True
-use_selenium = False
+# Function to read configurations from JSON file
+def read_configurations(file_path):
+    with open(file_path, 'r') as file:
+        config_data = json.load(file)
+    return config_data
 
-stocks = stock_analysis(Start,End,SecondRound,minumum_volume,max_NA,googleSheets, use_selenium)
-if not googleSheets:    
+# Path to the JSON file
+config_file_path = 'configuration.json'
+configurations = read_configurations(config_file_path)
+
+# Use configurations to initialize stock_analysis
+stocks = stock_analysis(
+    configurations["start"],
+    configurations["end"],
+    configurations["secondRound"],
+    configurations["minumumVolume"],
+    configurations["maxNA"],
+    configurations["googleSheets"],
+    configurations["useSelenium"],
+    configurations["googleCloudCredPath"],
+)
+
+if not configurations["googleSheets"]:    
     print_data(stocks,10)

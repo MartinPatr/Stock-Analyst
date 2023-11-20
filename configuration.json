@@ -1,0 +1,11 @@
+{
+    "start": 300,
+    "end": 800,
+    "secondRound": "all",
+    "minumumVolume": "0",
+    "maxNA": 10,
+    "googleSheets": true,
+    "useSelenium": false,
+    "googleCloudCredPath": "creds/credentials.json"
+  }
+  
