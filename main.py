@@ -4,7 +4,7 @@ from datacollection import get_frontpage_url, get_data
 from general_analysis import calculate_score
 from selenium_analysis import get_financials, close_driver
 from detailed_analysis import update_score,retrieve_financials, retrieve_analysis
-from populate_sheet import initialize_google_api, populate_sheet
+from populate_dbs import initialize_google_api, populate_sheet, populate_db
 import concurrent.futures
 
 # Calculate the final score for each stock
@@ -13,9 +13,9 @@ import concurrent.futures
 # secondRound: How many stocks you want to bring to the second round
 # volume: The volume requirement for the stocks(Must be a string) - Used in get_data
 # numInfo: The maximum number of NA's to be analyized - Used in get_data
-# googleSheets: Whether or not to populate the Google Sheets
+# db: Whether or not to populate the Google Sheets, mongodb, or both
 # selenium: Whether or not to use Selenium to retrieve the financials and analysis
-def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleSheets=False, selenium=False, configurationPath="configuration.json"):
+def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, db=None, selenium=False ,configurationPath="configuration.json"):
     stocks = []
     removeStocks = []
     ignoreStocks = []
@@ -76,10 +76,6 @@ def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleShe
                 if i >= secondRound:
                     stocks.remove(stock)
 
-    # Initialize the Google Sheets API, if the user wants to populate the Google Sheets
-    wks = initialize_google_api(configurationPath) if googleSheets else False
-
-
     # Combat memory leaks
     ignoreStocks = file = html = tickerlist = None
 
@@ -121,17 +117,23 @@ def stock_analysis(startStock,numStocks, secondRound, volume, numInfo, googleShe
         for stock in removeStocks:
             file.write(stock['Ticker'] + "\n")
 
-    if not googleSheets:
-        # Sort the stocks based on the score in descending order
-        sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
-        return sorted_stocks
-    else:
+    # Update db
+    if db is not None:
+        # Initialize the Google Sheets API, if the user wants to populate the Google Sheets
+        wks = initialize_google_api(configurationPath) if db == "gs" or db == "all" else False
         print()
-        print("Populating Google Sheets")
+        print("Populating")
         for stock in stocks:
             # Populate the Google Sheets
             print()
-            populate_sheet(wks, stock)
+            if db == "gs" or db == "all":
+                populate_sheet(wks, stock)
+            if db == "mongodb" or db == "all":
+                populate_db(stock)
+    else:
+        # Sort the stocks based on the score in descending order
+        sorted_stocks = sorted(stocks, key=lambda x: x['Score'], reverse=True)
+        return sorted_stocks
 
 
 # Function to print out the data
@@ -205,10 +207,9 @@ stocks = stock_analysis(
     configurations["secondRound"],
     configurations["minumumVolume"],
     configurations["maxNA"],
-    configurations["googleSheets"],
+    configurations["database"],
     configurations["useSelenium"],
-    configurations["googleCloudCredPath"],
+    configurations["googleCloudCredPath"]
 )
 
-if not configurations["googleSheets"]:    
-    print_data(stocks,10)
+print_data(stocks,10)

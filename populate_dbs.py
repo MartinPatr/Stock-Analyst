@@ -1,4 +1,7 @@
 import pygsheets
+import json
+import certifi
+from pymongo import MongoClient
 
 # Initialize Google API, return worksheet
 def initialize_google_api(credentialsPath):
@@ -39,3 +42,22 @@ def populate_sheet(wks,stock):
         row += 1
         print(f"Adding Row for {ticker}: " + str(row))
         wks.update_values("A" + str(row) + ":" + "Z" + str(row), values=stock_data)
+
+def populate_db(stock):
+    config_file_path = 'creds/mongodbcreds.json'
+    # Read the JSON data from the file
+    with open(config_file_path, 'r') as file:
+        json_data = file.read()
+    parsed_data = json.loads(json_data)
+    # Get the connection string
+    connection_string = parsed_data.get("connection_string")
+    # Create a new client and connect to the server
+    ca = certifi.where()
+    client = MongoClient(connection_string, tlsCAFile=ca)
+
+    db = client['StockAnalyzerResults']
+    collection = db['Stocks']
+
+    insert_doc = collection.insert_one(stock)
+    print(f'Added to database successfully:  {insert_doc.inserted_id}')
+    client.close
