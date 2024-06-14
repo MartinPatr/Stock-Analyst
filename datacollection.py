@@ -26,7 +26,8 @@ def get_data(ticker):
     # Get api data
     try:
         get_api_data(stock_info)
-    except:
+    except Exception as e:
+        print(e)
         print("Error with fetching API Data")
         return None
 
@@ -34,6 +35,7 @@ def get_data(ticker):
 
 # Getting API Data
 def get_api_data(stock_info):
+    ticker = stock_info["Ticker"]
     # Getting company profile information
     url = f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={get_api_key()}"
     company_profile_data = get_jsonparsed_api_data(url)
@@ -65,7 +67,6 @@ def get_api_key():
         data = json.load(file)
     return data["api_key"]
 
-url = ("https://financialmodelingprep.com/api/v3/key-metrics/AAPL?period=annual&apikey=a2LggDCNFTYKqYZIpjgibbKjLPQXgUVD")
 
 if __name__ == "__main__":
     print(get_data("AAPL"))
