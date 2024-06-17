@@ -1,4 +1,5 @@
 from datetime import date
+import re
 from urllib.request import urlopen
 import certifi
 import json
@@ -11,40 +12,48 @@ def get_data(ticker):
     # Create a dictionary to store the data
     stock_info = {
         'Ticker': ticker,
-        'Price': '1',
-        'Volume': '1',
-        'Market Cap': '1',
+        'Price': '',
+        'Volume': '',
+        'Market Cap': '',
         'Date': date.today().strftime("%m/%d/%Y"),
-        'Industry': '1',
-        'Sector': '1',
-        'Description': '1',
-        'P/E': '2',
-        'P/S': '2',
-        'P/B': '2',
-        'EV/Sales': '2',
-        'Current Ratio': '2',
-        'Debt to Equity': '2',
+        'Industry': '',
+        'Sector': '',
+        'Description': '',
+        'P/E': '',
+        'P/S': '',
+        'P/B': '',
+        'EV/Sales': '',
+        'Current Ratio': '',
+        'Debt to Equity': '',
         'BarChart Recommendation': '',
-        'Score': ''
+        'Benzinga Recommendation': '',
+        'MarketBeat Recommendation': '',
+        'Zacks Recommendation': '',
+        'StockTargetAdvisor Recommendation': '',
+        'TheGlobeandMail Recommendation': '',
+        'Score': '',    
+        'StockChecker Recommendation': ''
     }
 
-
+    
     # Get api data
-    try:
-        get_api_data(stock_info)
-    except Exception as e:
-        print(e)
-        print("Error with fetching API Data")
-        return None
+    # try:
+    #     get_api_data(stock_info)
+    # except Exception as e:
+    #     print(e)
+    #     print("Error with fetching API Data")
+    #     return None
 
     # Start webscraping and get recommendation data
     try:
         session = start_session()
-        get_bar_chart_data(stock_info, session)
-
+        with open("data/urls.json", 'r') as file:
+            urls_data = json.load(file)
+            for item in urls_data:
+                get_html_recommendation_data(stock_info, session, item)
     except Exception as e:
         print(e)
-        print("Error with fetching Recommendation Data")
+        print("Error with creating session")
         return None
     finally:
         end_session(session)
@@ -99,30 +108,99 @@ def end_session(session):
     session.close()
 
 
-def get_bar_chart_data(stock_info, session):
-    ticker = stock_info["Ticker"]
-    url = f"https://www.barchart.com/stocks/quotes/{ticker}/analyst-ratings"
+# Getting recommendation data based on json file urls
+def get_html_recommendation_data(stock_info, session, json_url_data):
+    ticker = stock_info["Ticker"].lower() if json_url_data["is_ticker_lower"] else stock_info["Ticker"]
+    url = json_url_data["url"]
     html = get_frontpage_url(session, ticker, url)
     if html is not None:
         try:
             soup = BeautifulSoup(html.text, 'html.parser')
-            div_element = soup.find('div', class_='block__colored-header rating buy-mod')
-            stock_info['BarChart Recommendation'] = div_element.text
+            # From BarChart
+            if json_url_data["element_name"] == 'specific' and "BarChart" in json_url_data["name"]:
+                rating_elements = soup.find_all(json_url_data["element_type"], class_=re.compile(r'block__colored-header.*'))
+                rating_element = rating_elements[-1].get_text(strip=True)
+
+                rating_values = soup.find_all('div', class_='block__average_value')
+                block__average_value = rating_values[-1].get_text(strip=True)
+
+                target_element = rating_element + " - " + block__average_value + "/5"
+            # From TheGlobeandMail
+            
+            # elif json_url_data["element_name"] == 'specific' and "TheGlobeandMail" in json_url_data["name"]:
+            #     rating_values = soup.find_all(json_url_data["element_type"], style=re.compile(r'height:.*'))
+            #     rating_value = rating_values[3].get_text(strip=True)
+
+            #     if float(rating_value) > 4.5: 
+            #         target_element = "Strong Buy"
+            #     elif float(rating_value) > 4:
+            #         target_element = "Moderate Buy"
+            #     elif float(rating_value) > 3:
+            #         target_element = "Hold"
+            #     elif float(rating_value) > 2:
+            #         target_element = "Moderate Sell"
+            #     else:
+            #         target_element = "Strong Sell"
+
+            #     target_element = target_element + " - " + rating_value + "/5"
+
+            # From Benzinga
+            elif json_url_data["element_name"] == 'specific' and "Benzinga" in json_url_data["name"]:
+                target_element = soup.find('span', class_='analyst-rating-label')  
+
+                rating_value = soup.find('div', class_='analyst-rating-score-circle')
+
+                target_element = target_element.get_text(strip=True) + " - " + rating_value.get_text(strip=True) + "/5"
+            # From Zacks
+
+            elif "Zacks" in json_url_data["name"]:
+                target_element = soup.find(json_url_data["element_type"], class_=json_url_data["element_name"])
+                target_element = target_element.get_text(strip=True)
+                match = re.search(r'-(.*?)of', target_element)
+
+                rating_value = abs(int(target_element[0]) - 6)
+
+                target_element = match.group(1).strip() + " - " + str(rating_value) + "/5"
+            # From MarketBeat
+
+            elif "MarketBeat" in json_url_data["name"]:
+                target_element = soup.find(json_url_data["element_type"], class_=json_url_data["element_name"])
+                target_element = target_element.get_text(strip=True)
+
+                rating_value = soup.find('div', class_='key-stat-details')
+                rating_value = rating_value.get_text(strip=True)
+
+                target_element = target_element + " - " + rating_value[0] + "/5"
+            
+            else:
+                target_element = soup.find(json_url_data["element_type"], class_=json_url_data["element_name"])
+                target_element = target_element.get_text(strip=True)
+
+            stock_info[json_url_data["name"]] = target_element
+            print("Data from " + json_url_data["name"] + " for " + ticker + " is: " + stock_info[json_url_data["name"]])
+
         except Exception as e:
             print(e)
-            print("Error with fetching Bar Chart Data with " + ticker)
-
+            print("Error with fetching data from " + json_url_data["name"] + " for " + ticker)
+    print()
 
 # Get the page html
 def get_frontpage_url(session, ticker, url):
-    url.format(ticker=ticker)
-    print(url)
+    url = url.format(ticker=ticker)
+    print("Attempting to get data from: " + url)
     html = session.get(url)  # Use session to make the request
     if html.status_code == 200:
         return html
     else:
-        print("Error with request html: " + url)
+        print("Error with request html: " + url + " Status Code:" +  str(html.status_code))
         
-
 if __name__ == "__main__":
-    print(get_data("AAPL"))
+    data = get_data("SGD")
+    print("BarChart = " + data["BarChart Recommendation"])
+    print("Benzinga = " + data["Benzinga Recommendation"])
+    print("MarketBeat = " + data["MarketBeat Recommendation"])
+    print("Zacks = " + data["Zacks Recommendation"])
+    print("StockTargetAdvisor = " + data["StockTargetAdvisor Recommendation"])
+    print("StockChecker = " + data["StockChecker Recommendation"])
+    # print("TheGlobeandMail = " + data["TheGlobeandMail Recommendation"])
+    print("Score = " + str(data["Score"]))
