@@ -1,0 +1,39 @@
+[
+    {
+        "name": "BarChart Recommendation",
+        "url": "https://www.barchart.com/stocks/quotes/{ticker}/analyst-ratings",
+        "element_name": "specific",
+        "element_type": "div",
+        "is_ticker_lower": false
+        
+    },
+    {
+        "name": "MarketBeat Recommendation",
+        "url": "https://www.marketbeat.com/stocks/NASDAQ/{ticker}/",
+        "element_name": "key-stat",
+        "element_type": "div",
+        "is_ticker_lower": false
+    },
+    {
+        "name": "Benzinga Recommendation",
+        "url": "https://www.benzinga.com/quote/{ticker}",
+        "element_name": "specific",
+        "element_type": "span",
+        "is_ticker_lower": false
+    },
+    {
+        "name": "Zacks Recommendation",
+        "url": "https://www.zacks.com/stock/quote/{ticker}",
+        "element_name": "rank_view",
+        "element_type": "p",
+        "is_ticker_lower": false
+
+    },
+    {
+        "name": "StockTargetAdvisor Recommendation",
+        "url": "https://www.stocktargetadvisor.com/stock/USA/NSD/{ticker}",
+        "element_name": "Verdictval0 mb-0 fs-14",
+        "element_type": "p",
+        "is_ticker_lower": false
+    }
+]

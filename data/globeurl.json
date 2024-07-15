@@ -1,0 +1,9 @@
+[
+    {
+        "name": "TheGlobeandMail Recommendation",
+        "url": "https://www.theglobeandmail.com/investing/markets/stocks/{ticker}-N/research/",
+        "element_name": "specific",
+        "element_type": "div",
+        "is_ticker_lower": false
+    }
+]

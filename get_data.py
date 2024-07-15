@@ -1,4 +1,3 @@
-from datetime import date
 import re
 from urllib.request import urlopen
 import certifi
@@ -8,76 +7,55 @@ from bs4 import BeautifulSoup
 
 
 # Main function to get data
-def get_recommendation_data(ticker):
+def get_recommendation_data(stock_info , session):
     # Create a dictionary to store the data
-    stock_info = {
-        'Ticker': ticker,
-        'Price': '',
-        'Volume': '',
-        'Market Cap': '',
-        'Date': date.today().strftime("%m/%d/%Y"),
-        'Industry': '',
-        'Sector': '',
-        'Description': '',
-        'P/E': '',
-        'P/S': '',
-        'P/B': '',
-        'EV/Sales': '',
-        'Current Ratio': '',
-        'Debt to Equity': '',
-        'BarChart Recommendation': '',
-        'Benzinga Recommendation': '',
-        'MarketBeat Recommendation': '',
-        'Zacks Recommendation': '',
-        'StockTargetAdvisor Recommendation': '',
-        'TheGlobeandMail Recommendation': '',
-        'Score': '',    
-        'StockChecker Recommendation': ''
-    }
-
     # Start webscraping and get recommendation data
-    try:
-        session = start_session()
-        with open("data/urls.json", 'r') as file:
-            urls_data = json.load(file)
-            for item in urls_data:
-                get_html_recommendation_data(stock_info, session, item)
-    except Exception as e:
-        print(e)
-        print("Error with creating session")
-        return None
-    finally:
-        end_session(session)
-    
+    with open("data/urls.json", 'r') as file:
+        urls_data = json.load(file)
+        for item in urls_data:
+            get_html_recommendation_data(stock_info, session, item)
 
     return stock_info
 
 # Getting API Data
-def get_api_data(stock_info):
-    print("Getting api data for " + stock_info["Ticker"])
-    ticker = stock_info["Ticker"]
-    # Getting company profile information
-    url = f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={get_api_key()}"
-    company_profile_data = get_jsonparsed_api_data(url)
-    stock_info['Price'] = company_profile_data["price"]
-    stock_info['Volume'] = company_profile_data["volAvg"]
-    stock_info['Market Cap'] = company_profile_data["mktCap"]
-    stock_info['Industry'] = company_profile_data["industry"]
-    stock_info['Sector'] = company_profile_data["sector"]
-    stock_info['Description'] = company_profile_data["description"]
+def get_api_data(stock_info, current_call=0):
+    print("Getting api data for " + stock_info["Ticker"] + "...")
+    try:
+        ticker = stock_info["Ticker"]
+        # Getting company profile information
+        # url = f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={get_api_key()}"
+        # company_profile_data = get_jsonparsed_api_data(url)
+        # stock_info['Company Name'] = company_profile_data["companyName"]
+        # stock_info['Price'] = company_profile_data["price"]
+        # stock_info['Volume'] = company_profile_data["volAvg"]
+        # stock_info['Market Cap'] = company_profile_data["mktCap"]
+        # stock_info['Industry'] = company_profile_data["industry"]
+        # stock_info['Sector'] = company_profile_data["sector"]
 
-    # Getting company metrics information
-    url = f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker}?period=annual&apikey={get_api_key()}"
-    company_metrics_data = get_jsonparsed_api_data(url)
-    stock_info['P/E'] = company_metrics_data["peRatio"]
-    stock_info['P/S'] = company_metrics_data["priceToSalesRatio"]
-    stock_info['P/B'] = company_metrics_data["pbRatio"]
-    stock_info['EV/Sales'] = company_metrics_data["evToSales"]
-    stock_info['Current Ratio'] = company_metrics_data["currentRatio"]
-    stock_info['Debt to Equity'] = company_metrics_data["debtToEquity"]
+        # Getting company metrics information
+        url = f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker}?period=annual&apikey={get_api_key()}"
+        company_metrics_data = get_jsonparsed_api_data(url)
+        stock_info['P/E'] = company_metrics_data["peRatio"]
+        stock_info['P/S'] = company_metrics_data["priceToSalesRatio"]
+        stock_info['P/B'] = company_metrics_data["pbRatio"]
+        stock_info['EV/Sales'] = company_metrics_data["evToSales"]
+        stock_info['Current Ratio'] = company_metrics_data["currentRatio"]
+        stock_info['Debt to Equity'] = company_metrics_data["debtToEquity"]
+    except Exception as e:
+        if hasattr(e, 'code') and e.code == 429:
+            update_api_key()
+            return "Fail - New"
+        else:
+            print(e)
+            print("Error with getting data from API for " + stock_info["Ticker"])
+            return False
 
-    return stock_info
-   
+    if current_call == 125:
+        update_api_key()
+        return "Success - New"
+    
+    return True
+        
 # Get the json parsed data from the API
 def get_jsonparsed_api_data(url):
     response = urlopen(url, cafile=certifi.where())
@@ -86,9 +64,29 @@ def get_jsonparsed_api_data(url):
 
 # Get the API key
 def get_api_key():
-    with open('creds/creds.json', 'r') as file:
+    with open('creds/api_keys.json', 'r') as file:
         data = json.load(file)
-    return data["api_key"]
+
+    index = data.get('current_index', 0)
+    keys = data.get('api_keys', [])
+    
+    return keys[index]
+
+# Update the API key
+def update_api_key():
+    json_file_path = 'creds/api_keys.json'
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+    
+    # Get the current index and API keys
+    current_index = data.get('current_index', 0)
+    api_keys = data.get('api_keys', [])
+    new_index = (current_index + 1) % len(api_keys)
+    data['current_index'] = new_index
+    
+    # Write the updated data back to the JSON file
+    with open(json_file_path, 'w') as file:
+        json.dump(data, file, indent=4)
 
 # Start a session
 def start_session():
@@ -169,7 +167,7 @@ def get_html_recommendation_data(stock_info, session, json_url_data):
                 rating_value = soup.find('div', class_='key-stat-details')
                 rating_value = rating_value.get_text(strip=True)
 
-                target_element = target_element + " - " + rating_value[0] + "/5"
+                target_element = target_element + " - " + rating_value[0] + "/3"
             
             else:
                 target_element = soup.find(json_url_data["element_type"], class_=json_url_data["element_name"])
@@ -186,7 +184,7 @@ def get_html_recommendation_data(stock_info, session, json_url_data):
 # Get the page html
 def get_frontpage_url(session, ticker, url):
     url = url.format(ticker=ticker)
-    print("Attempting to get data from: " + url)
+    print("Attempting to get data from: " + url + "...")
     html = session.get(url)  # Use session to make the request
     if html.status_code == 200:
         return html
@@ -194,12 +192,15 @@ def get_frontpage_url(session, ticker, url):
         print("Error with request html: " + url + " Status Code:" +  str(html.status_code))
         
 if __name__ == "__main__":
-    data = get_recommendation_data("ENVX")
-    print("BarChart = " + data["BarChart Recommendation"])
-    print("Benzinga = " + data["Benzinga Recommendation"])
-    print("MarketBeat = " + data["MarketBeat Recommendation"])
-    print("Zacks = " + data["Zacks Recommendation"])
-    print("StockTargetAdvisor = " + data["StockTargetAdvisor Recommendation"])
-    print("StockChecker = " + data["StockChecker Recommendation"])
-    # print("TheGlobeandMail = " + data["TheGlobeandMail Recommendation"])
-    print("Score = " + str(data["Score"]))
+    update_api_key()
+    # session = start_session()
+    # data = get_recommendation_data("ENVX", session)
+    # print("BarChart = " + data["BarChart Recommendation"])
+    # print("Benzinga = " + data["Benzinga Recommendation"])
+    # print("MarketBeat = " + data["MarketBeat Recommendation"])
+    # print("Zacks = " + data["Zacks Recommendation"])
+    # print("StockTargetAdvisor = " + data["StockTargetAdvisor Recommendation"])
+    # print("StockChecker = " + data["StockChecker Recommendation"])
+    # # print("TheGlobeandMail = " + data["TheGlobeandMail Recommendation"])
+    # print("Score = " + str(data["Score"]))
+    # end_session(session)
