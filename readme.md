@@ -1,44 +1,56 @@
 # Stock Analyzer
-
-Stock Analyzer is a tool for analyzing stock data, retrieving financial information, and providing scores based on various factors. It includes modules for data collection, general analysis, selenium-based analysis, detailed analysis, and database population.
-
 ## Overview
 
-The Stock Analyzer project addresses the need for a comprehensive tool to assess stock performance and make informed investment decisions. It combines web scraping techniques, financial analysis, and data visualization to provide users with valuable insights into the stocks they are interested in. The main features of the Stock Analyzer include:
+Stock Analyzer is a tool designed to analyze stock data, populate Google Sheets with the analyzed data, and store the data in a MongoDB database. This project utilizes various APIs to gather stock information and recommendations, processes the data, and then makes it available for further analysis or reporting.
 
-Data Collection: Utilizes web scraping to collect stock data from MarketWatch, extracting relevant information for analysis.
+## Files Description
 
-General Analysis: Performs a broad analysis of stock data, calculating scores based on key financial metrics and industry benchmarks.
+### main.py
 
-Selenium-based Analysis: Utilizes Selenium to retrieve detailed financial information, enhancing the depth of analysis for a more accurate score.
+The main script of the project. It performs the following tasks:
+- Reads a list of stock tickers from a file (`data/tickers.txt`).
+- Initializes a session for data gathering.
+- Iterates through the tickers, gathering data for each one.
+- Populates a Google Sheet with the gathered data.
+- Optionally stores the data in a MongoDB database.
 
-Detailed Analysis: Incorporates in-depth analysis, including net income growth, EPS growth, analyst recommendations, and target prices, contributing to a refined overall score.
+**Functions:**
+- `main(numberStart=0, numberEnd=6000)`: The entry point of the script, which processes a range of tickers from the file.
+  - Initializes Google Sheets API.
+  - Starts a data gathering session.
+  - Iterates through tickers, gathering data and populating Google Sheets.
+  - Ends the session and prints the elapsed time.
 
-Database Population: Populates databases, supporting Google Sheets and MongoDB, to store and organize the analyzed stock data
+### populate_db.py
 
-## configuration.json
-start: The number of the stock to start analyzing. This is used to specify the starting point when analyzing a list of stocks.
+This script is responsible for populating the Google Sheet with stock data and storing the data in a MongoDB database.
 
-end: The number of stocks to analyze. Together with the start parameter, this determines the range of stocks to be analyzed.
+**Functions:**
+- `initialize_google_api(credentialsPath)`: Initializes the Google Sheets API using the provided credentials and returns the worksheet object.
+- `populate_sheet(wks, stock)`: Populates the Google Sheet with the provided stock data. It checks if the stock ticker already exists in the sheet and updates or adds new data accordingly.
+- `populate_db(stock)`: Stores the provided stock data in a MongoDB database.
 
-secondRound: Specifies how many stocks you want to bring to the second round of analysis. If set to "all," all stocks will go through the second round.
+### Supporting Files
 
-minimumVolume: The volume requirement for the stocks. It must be a string and is used in the get_data function.
+#### data/tickers.txt
+- A file containing a list of stock tickers to be analyzed.
 
-maxNA: The maximum number of NA's to be analyzed. If the number of NA's exceeds this threshold for a stock, it won't be analyzed.
+#### creds/credentials.json
+- A JSON file containing the credentials required to authenticate with the Google Sheets API.
 
-database: Specifies whether to populate the Google Sheets, MongoDB, or both. It accepts values "gs," "mongodb," "all," or null (if you don't want to populate any database).
+#### creds/creds.json
+- A JSON file containing the connection string for the MongoDB database.
 
-useSelenium: Specifies whether to use Selenium to retrieve financials and analysis. Set to true if you want to use Selenium, false otherwise.
+## Usage
 
-googleCloudCredPath: Path to the JSON file containing Google Cloud credentials. It is used when populating Google Sheets.
+1. **Setup Google API Credentials:**
+   - Ensure you have a `credentials.json` file with the necessary Google API credentials.
+   - Place this file in the `creds` directory.
 
-## Additional information
-If you want to use google sheet or mongodb create a folder called creds and place the following files
-mongodbcreds.json:
-{
-    "connection_string": "mongodb+srv://<username>:<password>@cluster0.cs66unx.mongodb.net/?retryWrites=true&w=majority"
-}
-&
-credentials.json
-in configuration put the path of where you will place google clouds credentials.json. The default path is creds/credentials.jsons
+2. **Setup MongoDB Credentials:**
+   - Ensure you have a `creds.json` file with the necessary MongoDB connection string.
+   - Place this file in the `creds` directory.
+
+3. **Run the Main Script:**
+   ```bash
+   python main.py
