@@ -23,14 +23,14 @@ def get_api_data(stock_info, current_call=0):
     try:
         ticker = stock_info["Ticker"]
         # Getting company profile information
-        # url = f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={get_api_key()}"
-        # company_profile_data = get_jsonparsed_api_data(url)
-        # stock_info['Company Name'] = company_profile_data["companyName"]
-        # stock_info['Price'] = company_profile_data["price"]
-        # stock_info['Volume'] = company_profile_data["volAvg"]
-        # stock_info['Market Cap'] = company_profile_data["mktCap"]
-        # stock_info['Industry'] = company_profile_data["industry"]
-        # stock_info['Sector'] = company_profile_data["sector"]
+        url = f"https://financialmodelingprep.com/api/v3/profile/{ticker}?apikey={get_api_key()}"
+        company_profile_data = get_jsonparsed_api_data(url)
+        stock_info['Company Name'] = company_profile_data["companyName"]
+        stock_info['Price'] = company_profile_data["price"]
+        stock_info['Volume'] = company_profile_data["volAvg"]
+        stock_info['Market Cap'] = company_profile_data["mktCap"]
+        stock_info['Industry'] = company_profile_data["industry"]
+        stock_info['Sector'] = company_profile_data["sector"]
 
         # Getting company metrics information
         url = f"https://financialmodelingprep.com/api/v3/key-metrics/{ticker}?period=annual&apikey={get_api_key()}"
@@ -191,8 +191,25 @@ def get_frontpage_url(session, ticker, url):
     else:
         print("Error with request html: " + url + " Status Code:" +  str(html.status_code))
         
+
+def get_current_average(ticker):
+    sheet_url = "https://docs.google.com/spreadsheets/d/1OdVWhN9oaLe8YRzcZYlvp1HtcjozDhUsYLKKxd30UJs/gviz/tq?tqx=out:json&tq=SELECT%20*%20WHERE%20A%20=%20%27{ticker}%27".format(ticker=ticker)
+    response = requests.get(sheet_url)
+    response_text = response.text[47:-2]
+    data = json.loads(response_text)
+    rows = data['table']['rows']
+    if len(rows) == 0:
+        return None
+    row = rows[0]
+    columns = row['c']
+    if len(columns) == 0:
+        return None
+    current = columns[20]['v']
+    return current
+
 if __name__ == "__main__":
-    update_api_key()
+    print(get_current_average("AAPL"))
+    # update_api_key()
     # session = start_session()
     # data = get_recommendation_data("ENVX", session)
     # print("BarChart = " + data["BarChart Recommendation"])

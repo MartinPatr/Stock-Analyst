@@ -15,22 +15,25 @@ def calculate_stock_score(stock_info):
 
         # Adjustments for sector
         sector_adjustments = {
-            'technology': 1.15,
-            'financial services': 1,
-            'healthcare': 0.85,
-            'Industrials': 0.9,
-            'energy': 0.9,
-            'utilities': 0.9,
-            'basic materials': 0.9,
-            'real estate': 0.9,
+            'technology': 1.4,
+            'financial services': 0.9,
+            'healthcare': 1.3,
+            'industrials': 1,
+            'energy': 0.8,
+            'utilities': 1,
+            'consumer defensive': 1,
+            'communication services': 1,
+            'basic materials': 1,
+            'real estate': 1.3,
+            'consumer cyclical': 1.1
         }
 
         # Weights for each metric
         weights = {
             'market_cap': 0.05,
-            'pe': 0.175,
-            'ps': 0.175,
-            'pb': 0.175,
+            'pe': 0.18,
+            'ps': 0.18,
+            'pb': 0.18,
             'ev_sales':0.15,
             'current_ratio': 0.2,
             'debt_to_equity': 0.2

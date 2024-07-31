@@ -1,4 +1,5 @@
-
+import json
+import sys
 import time
 from datetime import date
 from get_data import get_recommendation_data, get_api_data, start_session, end_session
@@ -66,6 +67,30 @@ def main(numberStart=0, numberEnd=6000):
     elapsed_time = end_time - start_time
     print(f"Elapsed time: {elapsed_time} seconds" + " for " + str(numberEnd - numberStart) + " stocks")
 
+def read_values(filename):
+    with open(filename, 'r') as file:
+        data = json.load(file)
+    start = data.get('start', 0)
+    end = data.get('end', 200)
+    return start, end
+
+# Function to update values in the JSON file
+def update_values(filename):
+    _, end = read_values(filename)
+    new_start = end
+    new_end = (end + 200) % 5782
+    data = {
+        "start": new_start,
+        "end": new_end
+    }
+    with open(filename, 'w') as file:
+        json.dump(data, file)
+
 if __name__ == "__main__":
-    main(5300, 5781)
+    try:
+        start, end = sys.argv[1], sys.argv[2] if len(sys.argv) > 1 else read_values('data/indices.json')
+        main(start, end)
+    except Exception as e:
+        print(e)
+        print("Error in main function")
 

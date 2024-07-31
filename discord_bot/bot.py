@@ -1,3 +1,4 @@
+from datetime import date, datetime
 import requests
 import json
 import discord
@@ -6,7 +7,7 @@ from discord.ext import commands
 # Google Sheets setup
 spreadsheet_id = '1OdVWhN9oaLe8YRzcZYlvp1HtcjozDhUsYLKKxd30UJs'
 sheet_name = 'Results'
-sheet_range = 'A:V'
+sheet_range = 'A:W'
 full_url = f'https://docs.google.com/spreadsheets/d/{spreadsheet_id}/gviz/tq?sheet={sheet_name}&range={sheet_range}'
 
 def fetch_sheet_data():
@@ -31,8 +32,14 @@ def fetch_unqiue_sectors():
     data = json.loads(response_text)
 
     # Extract sectors
-    sectors = {row['c'][7]['v'] for row in data['table']['rows']} 
-    
+    sectors = set()
+    for row in data['table']['rows']:
+        try:
+            sector = row['c'][7]['v']
+            sectors.add(sector)
+        except (IndexError, KeyError, TypeError):
+            # Handle or log the error if necessary
+            pass    
     return sectors
 
 def format_market_cap(market_cap: float) -> str:
@@ -68,6 +75,30 @@ def filter_displayed_value(value, default='N/A'):
         return default
     
     return value
+
+def format_date(date):
+    # Extract the year, month, and day
+    year = date[5:9]
+    month = date[10:11]
+    day = date[12:13]
+
+    # Define month names
+    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+    # Convert month and day to integers
+    month = int(month)
+    day = int(day)
+
+    # Format the date
+    return f"{months[month]} {day:02}, {year}"
+
+def format_average_change(change):
+    change = change * 100
+    if str(change) == '0':
+        return change
+    if not "-" in str(change):
+        return f"+{change}%"
+    return f"{change}%"
 
 # Discord Bot setup
 intents = discord.Intents.default()
@@ -119,7 +150,9 @@ async def fetch_stock(ctx, * ,query):
                 f"StockTargetAdvisor Analysis: {row['StockTargetAdvisor Updated Rec']}\n"
                 f"StockChecker Bot Analysis: {row['StockChecker Rec']}\n"
                 f"**Weighted Average Analysis Score: {round(row['Average Value'],2)}/5**\n"
-            )
+                f"**Average Change: {format_average_change(row['Average Change'])}%**\n"
+                f"Last Updated: {format_date(row['Date Updated'])}"
+            )  
             await processing_response.delete()
             await ctx.send(response)
             return
@@ -156,10 +189,11 @@ async def fetch_best(ctx, top = 5, sector = 'All', market_cap_min = '0'):
         response += (
             f"No. {i + 1}\n"
             f"**{filter_displayed_value(row['Company Name'])} ({filter_displayed_value(row['Ticker'])})**\n"
-            f"Price: ${filter_displayed_value(row['Price'])}\n"
+            f"Price: ${filter_displayed_value(row['Price'])} Last Updated: {format_date(row['Date Updated'])}\n"
             f"Market Cap: {str(filter_displayed_value(format_market_cap(float(row['Market Cap']))))}\n"
             f"Industry: {row['Industry']}\n"
-            f"Weighted Average Analysis Score: **{round(row['Average Value'],2)}/5**\n"
+            f"** Weighted Average Analysis Score: {round(row['Average Value'],2)}/5**\n"
+            f"Average Change: **{format_average_change(row['Average Change'])}%**\n"
             "\n"
         )
     
@@ -167,5 +201,39 @@ async def fetch_best(ctx, top = 5, sector = 'All', market_cap_min = '0'):
     await ctx.send(response)
 
 
+@bot.command(name='change')
+async def fetch_best(ctx, top = 5, sector = 'All', market_cap_min = '0'):
+    processing_response = await ctx.send(f"Fetching top {top} stocks with sector: {sector} and market cap >= {market_cap_min}...")
+    data = fetch_sheet_data()
+    
+    # Filter by sector
+    if sector != 'All':
+        data = [row for row in data if row['Sector'].lower() == sector.lower()]
+    
+    # Filter by market cap
+    data = [row for row in data if filter_displayed_value(row['Market Cap'], 0.0) >= decode_market_cap(market_cap_min)]
+
+    # Sort by Average Value Rec
+    data.sort(key=lambda x: x['Average Change'], reverse=True)
+    
+    # Fetch top stocks
+    top = min(top, len(data))
+    response = ''
+    for i in range(top):
+        row = data[i]
+        response += (
+            f"No. {i + 1}\n"
+            f"**{filter_displayed_value(row['Company Name'])} ({filter_displayed_value(row['Ticker'])})**\n"
+            f"Price: ${filter_displayed_value(row['Price'])} Last Updated: {format_date(row['Date Updated'])}\n"
+            f"Market Cap: {str(filter_displayed_value(format_market_cap(float(row['Market Cap']))))}\n"
+            f"Industry: {row['Industry']}\n"
+            f"Weighted Average Analysis Score: **{round(row['Average Value'],2)}/5**\n"
+            f"**Average Change: {format_average_change(row['Average Change'])}%**\n"
+            "\n"
+        )
+    
+    await processing_response.delete()
+    await ctx.send(response)
+
 # Run the bot
-bot.run('MY_API_TOKEN')
+bot.run('Token')

@@ -5778,3 +5778,4 @@ ZOLT,Zoltek Companies,NASDAQ
 ZOOM,Zoom Technologies,NASDAQ
 ZUMZ,Zumiez Inc.,NASDAQ
 SPHR, Spherix Inc.,NASDAQ
+CRWD, CrowdStrike Holdings, Inc.,NASDAQ

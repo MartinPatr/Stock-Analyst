@@ -2,6 +2,7 @@ import pygsheets
 import json
 import certifi
 from pymongo import MongoClient
+from get_data import get_current_average
 
 # Initialize Google API, return worksheet
 def initialize_google_api(credentialsPath):
@@ -46,6 +47,10 @@ def populate_sheet(wks,stock):
     if stock['Volume'] is None or stock['Volume'] == "N/A" or stock['Volume'] == "":
         stock['Volume'] = f"=GOOGLEFINANCE(\"{ticker}\",\"volume\")"
     
+    current_average_score = get_current_average(ticker)
+    print("Current")
+    print(current_average_score)
+
     stock_data = list(stock.values())
     stock_data = [stock_data]
 
@@ -60,6 +65,17 @@ def populate_sheet(wks,stock):
 
         print(f"Updating Row for {ticker}: " + str(index))
         wks.update_values("A" + str(index) + ":" + "Z" + str(index), values=stock_data)
+
+        new_average_score = get_current_average(ticker) 
+        print("New")
+        print(new_average_score)
+
+        average_change = (new_average_score - current_average_score)/current_average_score 
+
+        print(average_change)
+        print(index)
+        wks.update_value(f"W{index}", round(average_change,2))
+
     else:
         # Append the new stock data to the bottom of the sheet
         row += 1
@@ -70,6 +86,9 @@ def populate_sheet(wks,stock):
         
         print(f"Adding Row for {ticker}: " + str(row))
         wks.update_values("A" + str(row) + ":" + "Z" + str(row), values=stock_data)
+
+        average_score = 0
+        wks.update_value(f"W{row}", average_score)
 
 def populate_db(stock):
 
