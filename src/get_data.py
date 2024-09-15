@@ -191,7 +191,6 @@ def get_frontpage_url(session, ticker, url):
     else:
         print("Error with request html: " + url + " Status Code:" +  str(html.status_code))
         
-
 def get_current_average(ticker):
     sheet_url = "https://docs.google.com/spreadsheets/d/1OdVWhN9oaLe8YRzcZYlvp1HtcjozDhUsYLKKxd30UJs/gviz/tq?tqx=out:json&tq=SELECT%20*%20WHERE%20A%20=%20%27{ticker}%27".format(ticker=ticker)
     response = requests.get(sheet_url)

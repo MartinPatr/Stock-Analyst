@@ -47,9 +47,13 @@ def populate_sheet(wks,stock):
     if stock['Volume'] is None or stock['Volume'] == "N/A" or stock['Volume'] == "":
         stock['Volume'] = f"=GOOGLEFINANCE(\"{ticker}\",\"volume\")"
     
+    if stock['Industry'] is None or stock['Industry'] == "N/A" or stock['Industry'] == "":
+        stock['Industry'] = "N/A"
+
+    if stock['Sector'] is None or stock['Sector'] == "N/A" or stock['Sector'] == "":
+        stock['Sector'] = "N/A"
+    
     current_average_score = get_current_average(ticker)
-    print("Current")
-    print(current_average_score)
 
     stock_data = list(stock.values())
     stock_data = [stock_data]
@@ -67,13 +71,13 @@ def populate_sheet(wks,stock):
         wks.update_values("A" + str(index) + ":" + "Z" + str(index), values=stock_data)
 
         new_average_score = get_current_average(ticker) 
-        print("New")
-        print(new_average_score)
 
-        average_change = (new_average_score - current_average_score)/current_average_score 
+        if current_average_score == 0:
+           average_change = 0
+        else:
+            average_change = (new_average_score - current_average_score)/current_average_score 
 
-        print(average_change)
-        print(index)
+
         wks.update_value(f"W{index}", round(average_change,2))
 
     else:
