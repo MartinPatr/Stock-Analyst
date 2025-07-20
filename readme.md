@@ -1,32 +1,41 @@
 # Stock Analyzer
+
 ## Overview
 
-Stock Analyzer is a tool designed to analyze stock data, populate Google Sheets with the analyzed data, and store the data in a MongoDB database. This project utilizes various APIs to gather stock information and recommendations, processes the data, and then makes it available for further analysis or reporting.
+**Stock Analyzer** is a full-stack tool built to collect, analyze, and surface professional stock recommendations. Originally created as a personal project to make investing less intimidating, it scrapes data from sites like MarketBeat and Barchart, stores it in a MongoDB database, and makes it accessible via a Google Sheet and a Discord bot called **StockChecker**.
 
-## Files Description
+### Features
+- Aggregates analyst recommendations and price targets from multiple sources
+- Normalizes scores using a 5-point weighted scale
+- Stores and updates data in MongoDB
+- Auto-populates a Google Sheet for visibility and reporting
+- Discord bot interface for real-time queries and rankings
 
-### main.py
+> ⚠️ **Note:** This project is no longer actively maintained due to expired AWS credits and early-stage design decisions. That said, writing this makes me want to fix it up and bring it back better than ever.
 
-The main script of the project. It performs the following tasks:
-- Reads a list of stock tickers from a file (`data/tickers.txt`).
-- Initializes a session for data gathering.
-- Iterates through the tickers, gathering data for each one.
-- Populates a Google Sheet with the gathered data.
-- Optionally stores the data in a MongoDB database.
+---
 
-**Functions:**
-- `main(numberStart=0, numberEnd=6000)`: The entry point of the script, which processes a range of tickers from the file.
-  - Initializes Google Sheets API.
-  - Starts a data gathering session.
-  - Iterates through tickers, gathering data and populating Google Sheets.
-  - Ends the session and prints the elapsed time.
+## Example Output
 
-### populate_db.py
+Below is a screenshot of the StockChecker Discord bot responding to a `!sc highest` query, showing top stock picks based on weighted analyst sentiment:
 
-This script is responsible for populating the Google Sheet with stock data and storing the data in a MongoDB database.
+![Example Bot Output](example.png)
 
-**Functions:**
-- `initialize_google_api(credentialsPath)`: Initializes the Google Sheets API using the provided credentials and returns the worksheet object.
+---
+
+## File Descriptions
+
+### `main.py`
+Main driver script for gathering data and populating outputs.
+
+**Responsibilities:**
+- Reads stock tickers from `data/tickers.txt`
+- Initializes scraping session
+- Collects and processes recommendation data
+- Populates Google Sheets and optionally writes to MongoDB
+
+**Function:**
+main(numberStart=0, numberEnd=6000) : Initializes the Google Sheets API using the provided credentials and returns the worksheet object.
 - `populate_sheet(wks, stock)`: Populates the Google Sheet with the provided stock data. It checks if the stock ticker already exists in the sheet and updates or adds new data accordingly.
 - `populate_db(stock)`: Stores the provided stock data in a MongoDB database.
 
