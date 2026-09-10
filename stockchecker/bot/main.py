@@ -109,7 +109,10 @@ def register_commands(tree: app_commands.CommandTree, bot: StockCheckerBot) -> N
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
         rows = queries.movers(
-            bot.store, n=count, sector=sector, min_market_cap=cap,
+            bot.store,
+            n=count,
+            sector=sector,
+            min_market_cap=cap,
             direction="down" if down else "up",
         )
         await interaction.response.send_message(embed=movers_embed(rows, down))

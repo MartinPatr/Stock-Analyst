@@ -57,7 +57,8 @@ def stock_embed(snapshot: StockSnapshot) -> discord.Embed:
         if rating.price_target is not None:
             target = format_price(rating.price_target)
             gain = upside(snapshot.price, rating.price_target)
-            details.append(f"target {target}" + (f" ({format_pct(gain)})" if gain is not None else ""))
+            suffix = f" ({format_pct(gain)})" if gain is not None else ""
+            details.append(f"target {target}{suffix}")
         embed.add_field(name=rating.source, value="\n".join(details), inline=True)
 
     if snapshot.fundamentals_score is not None:
@@ -84,9 +85,7 @@ def _ranking_line(rank: int, snapshot: StockSnapshot) -> str:
     )
 
 
-def top_embed(
-    rows: list[StockSnapshot], sector: str | None, min_cap: str | None
-) -> discord.Embed:
+def top_embed(rows: list[StockSnapshot], sector: str | None, min_cap: str | None) -> discord.Embed:
     filters = [f for f in (sector, f"cap ≥ {min_cap}" if min_cap else None) if f]
     title = f"Top {len(rows)} by composite score"
     if filters:

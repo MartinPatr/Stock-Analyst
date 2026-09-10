@@ -5,10 +5,11 @@ Both are pure functions of their inputs so they are trivial to test and to expla
 Fundamentals score
 ------------------
 Each valuation/health ratio is compared to a benchmark for the company's sector (a P/E of
-30 is ordinary for software and alarming for a utility). Ratios where *lower is better*
-(P/E, P/S, P/B, EV/Sales, Debt/Equity) go through a logistic curve centred on the
-benchmark; the *higher is better* current ratio goes through ``tanh``. Each component
-lands in ``[0, 1]``; a weighted mean is scaled to the canonical ``0-5`` range. Metrics
+30 is ordinary for software and alarming for a utility). Each ratio goes through a
+saturating curve that is exactly 0.5 at its benchmark: *lower is better* ratios (P/E,
+P/S, P/B, EV/Sales, Debt/Equity) fall from 1 towards 0 as they grow, the *higher is
+better* current ratio rises from 0 towards 1. Each component lands in ``[0, 1]``; a
+weighted mean is scaled to the canonical ``0-5`` range. Metrics
 that are missing are dropped and the remaining weights renormalised, so a partial
 profile still scores, but at least :data:`MIN_METRICS` must be present.
 
@@ -20,7 +21,6 @@ counts analyst sources only, so a stock rated by fundamentals alone shows covera
 
 from __future__ import annotations
 
-import math
 from collections.abc import Mapping
 from dataclasses import dataclass
 
@@ -84,22 +84,25 @@ def benchmarks_for(sector: str | None) -> Benchmarks:
     return SECTOR_BENCHMARKS.get(sector.strip().lower(), DEFAULT_BENCHMARKS)
 
 
+CURVE_STEEPNESS = 2.0
+
+
 def score_lower_is_better(value: float, benchmark: float) -> float:
-    """1 near zero, 0.5 at the benchmark, tending to 0 as the value grows. Negative -> 0.
+    """1 at zero, exactly 0.5 at the benchmark, 0.2 at 2x, tending to 0 as the value grows.
 
     A negative P/E or Debt/Equity means losses or negative equity, both red flags rather
     than "cheap", so they get the worst score instead of the best.
     """
     if value < 0:
         return 0.0
-    return 1.0 / (1.0 + math.exp((value - benchmark) / benchmark))
+    return 1.0 / (1.0 + (value / benchmark) ** CURVE_STEEPNESS)
 
 
 def score_higher_is_better(value: float, benchmark: float) -> float:
-    """0 at zero, ~0.76 at the benchmark, saturating towards 1."""
-    if value < 0:
+    """Mirror image: 0 at zero, 0.5 at the benchmark, 0.8 at 2x, saturating towards 1."""
+    if value <= 0:
         return 0.0
-    return math.tanh(value / benchmark)
+    return 1.0 - score_lower_is_better(value, benchmark)
 
 
 def score_fundamentals(

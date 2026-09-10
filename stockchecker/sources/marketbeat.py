@@ -39,7 +39,7 @@ _MB_BUCKET_WEIGHTS = {"Sell": 1.0, "Hold": 2.0, "Buy": 3.0, "Strong Buy": 4.0}
 _RE_ANALYSTS = re.compile(r"Based on\s+(\d+)\s+Analyst", re.I)
 _RE_SCORE_ROW = re.compile(r"Consensus Rating Score\D{0,40}?(\d\.\d{1,2})", re.I)
 _RE_MONEY = re.compile(r"\$\s?([\d,]+(?:\.\d+)?)")
-_RE_BUCKET = re.compile(r"\b(Strong Buy|Buy|Hold|Sell)\b\s*\|\s*(\d+)")
+_RE_BUCKET = re.compile(r"\b(Strong Buy|Buy|Hold|Sell)\b\s*(?:\|\s*)+(\d+)\b")
 
 
 @dataclass(frozen=True, slots=True)
