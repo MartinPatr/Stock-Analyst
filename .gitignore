@@ -1,4 +1,14 @@
-.DS_Store
+.venv/
 __pycache__/
-creds/
-ignore/
+*.pyc
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.env
+*.db
+*.db-*
+data/*.db
+data/.scan_checkpoint.json
