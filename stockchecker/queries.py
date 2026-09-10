@@ -52,14 +52,21 @@ def lookup(store: Store, query: str) -> StockSnapshot | None:
     return min(candidates, key=lambda s: len(s.name or ""))
 
 
+DEFAULT_MIN_COVERAGE = 2
+
+
 def top(
     store: Store,
     n: int = 10,
     sector: str | None = None,
     min_market_cap: float | None = None,
-    min_coverage: int = 1,
+    min_coverage: int = DEFAULT_MIN_COVERAGE,
 ) -> list[StockSnapshot]:
-    """Highest composite scores. Ties broken by analyst coverage, then market cap."""
+    """Highest composite scores. Ties broken by analyst coverage, then market cap.
+
+    ``min_coverage`` defaults to two analyst sources: a single opinion on an obscure
+    ticker should not outrank a broad consensus.
+    """
     rows = _filter(store.latest(), sector, min_market_cap)
     rows = [s for s in rows if s.composite is not None and s.coverage >= min_coverage]
     rows.sort(key=lambda s: (s.composite or 0, s.coverage, s.market_cap or 0), reverse=True)
@@ -95,6 +102,17 @@ def movers(
     result = [m for m in result if m.delta != 0]
     result.sort(key=lambda m: m.delta, reverse=(direction != "down"))
     return result[:n]
+
+
+def has_history(store: Store) -> bool:
+    """True once at least one ticker has two scored snapshots (so movers can exist)."""
+    return bool(store.previous_composites())
+
+
+def no_movers_message(store: Store) -> str:
+    if has_history(store):
+        return "No score changes since the previous snapshot."
+    return "No movers yet: a ticker needs at least two snapshots. Run another scan later."
 
 
 def sectors(store: Store) -> list[str]:

@@ -98,13 +98,13 @@ def top_embed(rows: list[StockSnapshot], sector: str | None, min_cap: str | None
     return embed
 
 
-def movers_embed(rows: list[Mover], down: bool) -> discord.Embed:
+def movers_embed(rows: list[Mover], down: bool, empty_message: str | None = None) -> discord.Embed:
     title = f"Top {len(rows)} {'drops' if down else 'gains'} since last snapshot"
     embed = discord.Embed(
         title=title, colour=discord.Colour.red() if down else discord.Colour.green()
     )
     if not rows:
-        embed.description = "No movers yet: a ticker needs at least two snapshots."
+        embed.description = empty_message or "No movers yet."
         return embed
     lines = []
     for i, mover in enumerate(rows, 1):

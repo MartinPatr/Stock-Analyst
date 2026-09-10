@@ -66,18 +66,19 @@ def test_lookup_by_ticker_then_by_name(populated_store: Store) -> None:
 
 
 def test_top_orders_and_filters(populated_store: Store) -> None:
-    assert [s.ticker for s in queries.top(populated_store)] == ["TINY", "MSFT", "AAPL", "XOM"]
-    assert [s.ticker for s in queries.top(populated_store, n=2)] == ["TINY", "MSFT"]
-    assert [s.ticker for s in queries.top(populated_store, sector="energy")] == ["XOM"]
-    assert [s.ticker for s in queries.top(populated_store, min_market_cap=1e9)] == [
+    # TINY has the best score but only one source, so the default excludes it.
+    assert [s.ticker for s in queries.top(populated_store)] == ["MSFT", "AAPL", "XOM"]
+    assert [s.ticker for s in queries.top(populated_store, min_coverage=1)] == [
+        "TINY",
         "MSFT",
         "AAPL",
         "XOM",
     ]
-    assert [s.ticker for s in queries.top(populated_store, min_coverage=2)] == [
+    assert [s.ticker for s in queries.top(populated_store, n=2)] == ["MSFT", "AAPL"]
+    assert [s.ticker for s in queries.top(populated_store, sector="energy")] == ["XOM"]
+    assert [s.ticker for s in queries.top(populated_store, min_market_cap=1e12)] == [
         "MSFT",
         "AAPL",
-        "XOM",
     ]
 
 
@@ -93,3 +94,10 @@ def test_movers_use_previous_snapshot(populated_store: Store) -> None:
 def test_movers_empty_without_history(store: Store) -> None:
     store.save(make_snapshot("AAPL", as_of=datetime(2026, 1, 1, tzinfo=UTC)), "r1")
     assert queries.movers(store) == []
+    assert not queries.has_history(store)
+    assert "at least two snapshots" in queries.no_movers_message(store)
+
+    store.save(make_snapshot("AAPL", as_of=datetime(2026, 1, 2, tzinfo=UTC)), "r2")
+    assert queries.movers(store) == []  # same score twice is not a move
+    assert queries.has_history(store)
+    assert "No score changes" in queries.no_movers_message(store)

@@ -27,7 +27,7 @@ def test_stock_embed_without_score() -> None:
 
 
 def test_top_and_movers_embeds(populated_store: Store) -> None:
-    rows = queries.top(populated_store, n=3, sector="Technology")
+    rows = queries.top(populated_store, n=3, sector="Technology", min_coverage=1)
     embed = top_embed(rows, "Technology", "1B")
     assert embed.title == "Top 3 by composite score (Technology, cap ≥ 1B)"
     assert embed.description.startswith("**1. TINY**")
@@ -38,6 +38,7 @@ def test_top_and_movers_embeds(populated_store: Store) -> None:
     assert "3.20/5 → 3.60/5 (**+0.40**, +12.5%)" in embed.description
 
     assert "No movers yet" in movers_embed([], down=True).description
+    assert movers_embed([], False, "custom").description == "custom"
     assert "No stored results" in top_embed([], None, None).description
 
 

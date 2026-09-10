@@ -110,10 +110,24 @@ def test_stockanalysis_unrelated_page_is_parse_error() -> None:
 
 
 def test_stockanalysis_uses_dash_slug() -> None:
-    response = MagicMock(text=read_fixture("stockanalysis_jpm.html"))
+    response = MagicMock(
+        text=read_fixture("stockanalysis_jpm.html"),
+        url="https://stockanalysis.com/stocks/brk-b/forecast/",
+    )
     session = MagicMock(get=MagicMock(return_value=response))
     stockanalysis.StockAnalysisSource(session).fetch("BRK.B")
     session.get.assert_called_once_with(stockanalysis.URL_TEMPLATE.format(ticker="brk-b"))
+
+
+def test_stockanalysis_redirect_to_successor_ticker_is_not_found() -> None:
+    # ABC (AmerisourceBergen) now redirects to AMT; that rating belongs to a different company.
+    response = MagicMock(
+        text=read_fixture("stockanalysis_jpm.html"),
+        url="https://stockanalysis.com/stocks/amt/forecast/",
+    )
+    session = MagicMock(get=MagicMock(return_value=response))
+    with pytest.raises(TickerNotFound):
+        stockanalysis.StockAnalysisSource(session).fetch("ABC")
 
 
 # --- Yahoo ----------------------------------------------------------------------------------
@@ -147,6 +161,23 @@ def test_yahoo_rating_from_info() -> None:
 
 def test_yahoo_rating_absent_when_no_analysts() -> None:
     assert yahoo.rating_from_info({"longName": "Tiny Co"}, "Yahoo Finance") is None
+
+
+def test_yahoo_rejects_empty_and_non_equity_quotes(monkeypatch) -> None:
+    class FakeTicker:
+        def __init__(self, symbol: str) -> None:
+            self.info = {
+                "EMPTY": {},
+                "FUND": {"shortName": "438280", "quoteType": "MUTUALFUND"},
+                "OK": {"longName": "Ok Corp", "quoteType": "EQUITY"},
+            }[symbol]
+
+    monkeypatch.setattr("yfinance.Ticker", FakeTicker)
+    with pytest.raises(TickerNotFound):
+        yahoo._load_info("EMPTY")
+    with pytest.raises(TickerNotFound):
+        yahoo._load_info("FUND")
+    assert yahoo._load_info("OK")["longName"] == "Ok Corp"
 
 
 def test_yahoo_profile_converts_debt_to_equity_percent() -> None:

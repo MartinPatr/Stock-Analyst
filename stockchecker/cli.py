@@ -316,7 +316,9 @@ def top(
     n: Annotated[int, typer.Option("--n", "-n", help="How many rows.")] = 10,
     sector: Annotated[str | None, typer.Option(help="Filter by sector, e.g. Technology.")] = None,
     min_cap: Annotated[str | None, typer.Option(help="Minimum market cap, e.g. 500M, 2B.")] = None,
-    min_coverage: Annotated[int, typer.Option(help="Minimum analyst sources.")] = 1,
+    min_coverage: Annotated[
+        int, typer.Option(help="Minimum analyst sources a stock needs to be ranked.")
+    ] = queries.DEFAULT_MIN_COVERAGE,
     db: Annotated[Path | None, typer.Option(help="SQLite path (default from .env).")] = None,
 ) -> None:
     """Highest-rated stocks from the most recent snapshots."""
@@ -351,7 +353,7 @@ def movers(
         direction="down" if down else "up",
     )
     if not rows:
-        console.print("[yellow]No movers yet: a ticker needs at least two snapshots.[/]")
+        console.print(f"[yellow]{queries.no_movers_message(store)}[/]")
         raise typer.Exit(code=1)
     table = _ranking_table(f"Top {len(rows)} {'drops' if down else 'gains'} in composite score")
     table.add_column("Prev", justify="right")

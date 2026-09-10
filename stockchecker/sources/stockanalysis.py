@@ -10,12 +10,13 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import dataclass
+from urllib.parse import urlsplit
 
 from bs4 import BeautifulSoup
 
 from stockchecker.models import Rating, RatingLabel
 from stockchecker.normalize import counts_to_canonical, label_from_text, score_from_label
-from stockchecker.sources.base import ParseError, Source
+from stockchecker.sources.base import ParseError, Source, TickerNotFound
 from stockchecker.sources.http import PoliteSession, get_session
 
 log = logging.getLogger(__name__)
@@ -127,6 +128,15 @@ def to_rating(consensus: StockAnalysisConsensus, source_name: str) -> Rating:
     )
 
 
+def _slug_from_url(url: str | None) -> str | None:
+    if not url:
+        return None
+    parts = [p for p in urlsplit(url).path.split("/") if p]
+    if len(parts) >= 2 and parts[0] == "stocks":
+        return parts[1].lower()
+    return None
+
+
 class StockAnalysisSource(Source):
     name = "StockAnalysis"
     weight = 1.0
@@ -144,6 +154,11 @@ class StockAnalysisSource(Source):
         # StockAnalysis uses dashes where exchanges use dots (BRK.B -> brk-b).
         slug = ticker.lower().replace(".", "-")
         response = self.session.get(URL_TEMPLATE.format(ticker=slug))
+        final_slug = _slug_from_url(response.url)
+        if final_slug is not None and final_slug != slug:
+            # Renamed/acquired tickers redirect to the successor (ABC -> AMT). That is a
+            # different company, so do not attribute its rating to the old symbol.
+            raise TickerNotFound(f"StockAnalysis redirected {ticker} to {final_slug.upper()}")
         consensus = parse_forecast_page(response.text)
         if consensus is None:
             log.debug("StockAnalysis has no analyst coverage for %s", ticker)

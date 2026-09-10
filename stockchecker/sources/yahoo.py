@@ -15,6 +15,8 @@ from stockchecker.sources.base import Source, SourceError, TickerNotFound
 
 log = logging.getLogger(__name__)
 
+ACCEPTED_QUOTE_TYPES = frozenset({"EQUITY"})
+
 
 def _load_info(ticker: str) -> dict[str, Any]:
     import yfinance as yf
@@ -23,10 +25,13 @@ def _load_info(ticker: str) -> dict[str, Any]:
         info = yf.Ticker(ticker).info or {}
     except Exception as exc:  # yfinance raises a grab-bag of exception types
         raise SourceError(f"yfinance failed for {ticker}: {exc}") from exc
-    # Unknown tickers come back as a near-empty dict rather than an error.
-    if not info or ("regularMarketPrice" not in info and "currentPrice" not in info):
-        if not info.get("longName") and not info.get("shortName"):
-            raise TickerNotFound(f"Yahoo has no data for {ticker}")
+    # Unknown tickers come back as a near-empty dict rather than an error, and stale
+    # symbols sometimes resolve to funds or indices; we only rate common stock.
+    if not info or not (info.get("longName") or info.get("shortName")):
+        raise TickerNotFound(f"Yahoo has no data for {ticker}")
+    quote_type = str(info.get("quoteType") or "EQUITY").upper()
+    if quote_type not in ACCEPTED_QUOTE_TYPES:
+        raise TickerNotFound(f"Yahoo lists {ticker} as {quote_type}, not a stock")
     return info
 
 

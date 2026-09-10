@@ -115,7 +115,8 @@ def register_commands(tree: app_commands.CommandTree, bot: StockCheckerBot) -> N
             min_market_cap=cap,
             direction="down" if down else "up",
         )
-        await interaction.response.send_message(embed=movers_embed(rows, down))
+        empty_message = queries.no_movers_message(bot.store) if not rows else None
+        await interaction.response.send_message(embed=movers_embed(rows, down, empty_message))
 
     @tree.command(name="sectors", description="Sectors present in the database")
     async def sectors(interaction: discord.Interaction) -> None:
