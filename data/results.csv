@@ -1,0 +1,51 @@
+ticker,name,sector,industry,price,market_cap,composite,label,coverage,fundamentals_score,as_of,MarketBeat score,StockAnalysis score,Yahoo Finance score,MarketBeat target,StockAnalysis target,Yahoo Finance target
+A,"Agilent Technologies, Inc.",Healthcare,Diagnostics & Research,142.77,40256262144.0,3.64,Buy,3,2.23,2026-09-10T19:36:54.346633+00:00,3.8,4.273,4.273,170.33,174.95,175.45
+AA,Alcoa Corporation,Basic Materials,Aluminum,48.45,12786412544.0,3.76,Buy,3,3.39,2026-09-10T19:36:54.347225+00:00,3.33,4.154,4.154,61.09,62.98,62.975
+AAN,,,,,,,,0,,2026-09-10T19:36:54.348281+00:00,,,,,,
+AAT,"American Assets Trust, Inc.",Real Estate,REIT - Diversified,21.47,1665766016.0,2.38,Sell,2,2.3,2026-09-10T19:36:54.348502+00:00,2.5,2.333,,21.5,23.5,
+AAVVF,Advantage Energy Ltd.,Energy,Oil & Gas E&P,7.83,1311021568.0,3.06,Hold,2,1.67,2026-09-10T19:36:55.411311+00:00,3.63,,3.889,,,11.99948
+AB,AllianceBernstein Holding L.P.,Financial Services,Asset Management,36.32,3380491776.0,2.68,Hold,2,1.47,2026-09-10T19:36:56.327027+00:00,3.29,3.286,,39.5,39.29,
+ABB,,,,,,2.6,Hold,1,,2026-09-10T19:36:57.500468+00:00,,2.6,,,92.6,
+ABBV,AbbVie Inc.,Healthcare,Drug Manufacturers - General,254.085,448998014976.0,3.31,Hold,3,0.72,2026-09-10T19:36:58.276348+00:00,3.88,4.323,4.323,276.64,276.59,276.7931
+ABC,,,,,,,,0,,2026-09-10T19:36:59.147141+00:00,,,,,,
+ABM,ABM Industries Incorporated,Industrials,Specialty Business Services,48.93,2868012032.0,3.5,Buy,3,3.56,2026-09-10T19:37:00.294548+00:00,3.2,3.625,3.625,49.88,55.36,54.07143
+ABR,"Arbor Realty Trust, Inc.",Real Estate,REIT - Mortgage,4.83,979177472.0,2.64,Hold,2,2.46,2026-09-10T19:37:01.501481+00:00,2.67,2.8,,6.0,5.88,
+ABT,Abbott Laboratories,Healthcare,Medical Devices,103.37,178869731328.0,3.8,Buy,3,2.33,2026-09-10T19:37:02.315148+00:00,3.96,4.462,4.462,119.5,120.21,120.20833
+ABV,,,,,,,,0,,2026-09-10T19:37:03.460741+00:00,,,,,,
+ABW-PB,,,,,,,,0,,2026-09-10T19:37:04.330491+00:00,,,,,,
+ABX,"Abacus Global Management, Inc.",Financial Services,Insurance - Life,9.5,929026368.0,3.65,Buy,3,1.98,2026-09-10T19:37:05.206158+00:00,3.6,4.5,4.5,12.0,14.08,14.08333
+ACE,,,,,,,,0,,2026-09-10T19:37:06.267352+00:00,,,,,,
+ACG,,,,,,4.0,Buy,1,,2026-09-10T19:37:07.264229+00:00,4.0,,,,,
+ACH,"Accendra Health, Inc.",Healthcare,Medical Distribution,1.065,81903512.0,2.84,Hold,2,3.05,2026-09-10T19:37:08.283857+00:00,2.8,2.667,,1.5,1.51,
+ACI,"Albertsons Companies, Inc.",Consumer Defensive,Grocery Stores,11.68,5668604416.0,3.01,Hold,3,2.23,2026-09-10T19:37:09.211518+00:00,3.06,3.368,3.368,15.31,14.19,14.1875
+ACM,AECOM,Industrials,Engineering & Construction,62.57,8052535296.0,3.88,Buy,3,2.92,2026-09-10T19:37:10.179263+00:00,3.54,4.538,4.538,88.25,86.92,86.91667
+ACMP,,,,,,,,0,,2026-09-10T19:37:12.937885+00:00,,,,,,
+ACN,Accenture plc,Technology,Information Technology Services,177.86,108840017920.0,3.8,Buy,3,3.92,2026-09-10T19:37:13.812957+00:00,3.41,3.926,3.926,194.19,184.19,184.1884
+ACO,,,,,,,,0,,2026-09-10T19:37:14.918785+00:00,,,,,,
+ACP,Abrdn Income Credit Strategies Fund,Financial Services,Asset Management,4.845,607905408.0,2.44,Sell,0,2.44,2026-09-10T19:37:15.847711+00:00,,,,,,
+ACRE,Ares Commercial Real Estate Corporation,Real Estate,REIT - Mortgage,4.38,243007280.0,2.81,Hold,2,2.82,2026-09-10T19:37:16.790679+00:00,2.86,2.75,,5.25,5.3,
+ACT,"Enact Holdings, Inc.",Financial Services,Insurance - Specialty,49.31,6779319808.0,3.04,Hold,1,2.68,2026-09-10T19:37:17.845445+00:00,,3.4,,,50.2,
+ACTV,,,,,,,,0,,2026-09-10T19:37:18.824823+00:00,,,,,,
+ACW,,,,,,,,0,,2026-09-10T19:37:19.825868+00:00,,,,,,
+ADC,Agree Realty Corporation,Real Estate,REIT - Retail,71.445,8911115264.0,3.56,Buy,3,2.12,2026-09-10T19:37:20.866489+00:00,3.81,4.15,4.15,83.94,84.86,84.86111
+ADM,Archer-Daniels-Midland Company,Consumer Defensive,Farm Products,86.925,41894338560.0,3.32,Hold,2,3.7,2026-09-10T19:37:21.826283+00:00,3.25,3.0,,79.67,78.7,
+ADS,,,,,,,,0,,2026-09-10T19:37:22.838932+00:00,,,,,,
+ADT,ADT Inc.,Industrials,Security & Protection Services,7.005,5117567488.0,3.14,Hold,2,2.79,2026-09-10T19:37:23.813973+00:00,3.14,3.5,,8.23,8.23,
+ADX,"Adams Diversified Equity Fund, Inc.",Financial Services,Asset Management,25.58,3195635968.0,1.88,Sell,0,1.88,2026-09-10T19:37:24.870371+00:00,,,,,,
+AEB,,,,,,,,0,,2026-09-10T19:37:25.871613+00:00,,,,,,
+AEC,Anfield Energy Inc.,Energy,Uranium,4.125,82293648.0,1.84,Sell,1,1.68,2026-09-10T19:37:26.914512+00:00,2.0,,,,,
+AED,,,,,,,,0,,2026-09-10T19:37:27.948323+00:00,,,,,,
+AEE,Ameren Corporation,Utilities,Utilities - Regulated Electric,105.445,29191737344.0,3.29,Hold,2,1.91,2026-09-10T19:37:28.807370+00:00,3.77,4.188,,121.42,120.4,
+AEF,"abrdn Emerging Markets ex-China Fund, Inc.",Financial Services,Asset Management,9.86,400330016.0,2.35,Sell,0,2.35,2026-09-10T19:37:29.791546+00:00,,,,,,
+AEG,Aegon Ltd.,Financial Services,Insurance - Diversified,9.03,13364315136.0,3.54,Buy,3,3.61,2026-09-10T19:37:30.883599+00:00,3.57,3.5,3.5,10.0,9.88,9.875
+AEH,,,,,,,,0,,2026-09-10T19:37:31.828486+00:00,,,,,,
+AEK,,,,,,,,0,,2026-09-10T19:37:32.870231+00:00,,,,,,
+AEL,,,,,,,,0,,2026-09-10T19:37:33.910665+00:00,,,,,,
+AEM,Agnico Eagle Mines Limited,Basic Materials,Gold,196.71,99607035904.0,3.64,Buy,3,2.29,2026-09-10T19:37:34.862891+00:00,3.71,4.273,4.273,226.0,214.62,214.89214
+AEO,"American Eagle Outfitters, Inc.",Consumer Cyclical,Apparel Retail,14.275,2392109312.0,3.27,Hold,3,3.85,2026-09-10T19:37:36.001397+00:00,3.07,3.077,3.071,19.36,18.36,19.54545
+AEP,"American Electric Power Company, Inc.",Utilities,Utilities - Regulated Electric,123.81,67401838592.0,3.38,Hold,3,1.91,2026-09-10T19:37:36.862708+00:00,3.59,4.0,4.0,140.19,144.0,144.0
+AER,AerCap Holdings N.V.,Industrials,Rental & Leasing Services,140.515,22086719488.0,3.7,Buy,2,2.49,2026-09-10T19:37:37.995020+00:00,4.0,4.6,,172.56,179.3,
+AES,The AES Corporation,Utilities,Utilities - Diversified,14.805,10562459648.0,2.95,Hold,3,2.81,2026-09-10T19:37:38.985865+00:00,3.0,3.0,3.0,15.71,,15.0
+AES-PC,,,,,,,,0,,2026-09-10T19:37:39.886130+00:00,,,,,,
+AET,,,,,,4.0,Buy,1,,2026-09-10T19:37:40.885017+00:00,4.0,,,,,
+AEV,,,,,,,,0,,2026-09-10T19:37:41.925407+00:00,,,,,,
